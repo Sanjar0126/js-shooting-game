@@ -60,7 +60,11 @@ class Player {
         if (this.isDead) return;
 
         this.health -= damage;
-        if (this.health < 0) this.health = 0;
+        if (this.health <= 0) {
+            this.health = 0;
+            this.isDead = true;
+            this.deathTimer = 0;
+        }
     }
 
     render(ctx, camera) {
