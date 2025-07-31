@@ -1,5 +1,6 @@
 import { Player } from './player.js';
 import { Enemy } from './enemy.js';
+import { DeathAnimation } from './animations.js';
 
 class Camera {
     constructor(width, height) {
@@ -123,6 +124,7 @@ class Game {
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             this.enemies[i].update(deltaTime, this.player, this.enemyBullets);
             if (this.enemies[i].health <= 0) {
+                this.deathAnimations.push(new DeathAnimation(this.enemies[i].x, this.enemies[i].y, 'enemy'));
                 this.score += this.enemies[i].scoreValue;
                 this.enemies.splice(i, 1);
             }
@@ -151,7 +153,7 @@ class Game {
         this.updateUI();
 
         if (this.player.isDead) {
-            if (this.player.deathTimer === deltaTime) { // First frame of death
+            if (this.player.deathTimer === deltaTime) {
                 this.deathAnimations.push(new DeathAnimation(this.player.x, this.player.y, 'player'));
             }
 

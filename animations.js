@@ -71,3 +71,5 @@ class DeathAnimation {
         }
     }
 }
+
+export { DeathAnimation };
