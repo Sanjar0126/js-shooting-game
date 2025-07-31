@@ -52,10 +52,8 @@ class Game {
         this.bullets = [];
         this.enemies = [];
 
-
         this.keys = {};
         this.mouse = { x: 0, y: 0 };
-
 
         this.lastTime = 0;
         this.enemySpawnTimer = 0;
@@ -113,7 +111,6 @@ class Game {
 
     update(deltaTime) {
         this.player.update(deltaTime, this.keys);
-
         this.camera.update(this.player);
 
         for (let i = this.bullets.length - 1; i >= 0; i--) {
@@ -138,6 +135,12 @@ class Game {
             }
         }
 
+        for (let i = this.deathAnimations.length - 1; i >= 0; i--) {
+            if (this.deathAnimations[i].update(deltaTime)) {
+                this.deathAnimations.splice(i, 1);
+            }
+        }
+
         this.enemySpawnTimer += deltaTime;
         if (this.enemySpawnTimer > 1000) {
             this.spawnEnemy();
@@ -145,11 +148,16 @@ class Game {
         }
 
         this.checkCollisions();
-
         this.updateUI();
 
-        if (this.player.health <= 0) {
-            this.gameOver();
+        if (this.player.isDead) {
+            if (this.player.deathTimer === deltaTime) { // First frame of death
+                this.deathAnimations.push(new DeathAnimation(this.player.x, this.player.y, 'player'));
+            }
+
+            if (this.player.deathTimer > 2000) {
+                this.gameOver();
+            }
         }
     }
 
@@ -164,6 +172,8 @@ class Game {
         this.bullets.forEach(bullet => bullet.render(this.ctx, this.camera));
         this.enemies.forEach(enemy => enemy.render(this.ctx, this.camera));
         this.enemyBullets.forEach(bullet => bullet.render(this.ctx, this.camera));
+
+        this.deathAnimations.forEach(animation => animation.render(this.ctx, this.camera));
 
         this.drawWorldBounds();
     }
@@ -316,6 +326,7 @@ class Game {
         this.bullets = [];
         this.enemies = [];
         this.enemyBullets = [];
+        this.deathAnimations = [];
 
         this.player = new Player(this.worldWidth / 2, this.worldHeight / 2);
         this.enemySpawnTimer = 0;
