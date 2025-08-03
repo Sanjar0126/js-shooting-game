@@ -64,6 +64,86 @@
         button:hover {
             background: #45a049;
         }
+
+
+        #mainMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        #menuContent {
+            background: #333;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            min-width: 300px;
+        }
+
+        #menuContent h1 {
+            color: #4CAF50;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        #menuContent h3 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        #menuButtons button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 12px;
+            font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #menuButtons button:hover {
+            background: #45a049;
+        }
+
+        #settingsPanel label {
+            display: block;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        #settingsPanel input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        #instructionsPanel {
+            text-align: left;
+            max-width: 400px;
+        }
+
+        #instructionsPanel p {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+
+        #ui {
+            display: none;
+        }
+
+        #gameOver {
+            z-index: 150;
+        }
     </style>
 </head>
 
@@ -78,7 +158,44 @@
         <div id="gameOver">
             <h2>Game Over!</h2>
             <p>Final Score: <span id="finalScore">0</span></p>
-            <button onclick="restartGame()">Restart Game</button>
+            <button onclick="restartGame()">Play Again</button>
+            <button onclick="returnToMenu()">Main Menu</button>
+        </div>
+    </div>
+
+    <div id="mainMenu">
+        <div id="menuContent">
+            <h1>Roguelike Shooter</h1>
+            <div id="menuButtons">
+                <button onclick="startGame()">Start Game</button>
+                <button onclick="toggleSettings()">Settings</button>
+                <button onclick="showInstructions()">How to Play</button>
+            </div>
+
+            <div id="settingsPanel" style="display: none;">
+                <h3>Settings</h3>
+                <label>
+                    <input type="checkbox" id="fpsToggle" checked> Show FPS
+                </label>
+                <br><br>
+                <button onclick="toggleSettings()">Back</button>
+            </div>
+
+            <div id="instructionsPanel" style="display: none;">
+                <h3>How to Play</h3>
+                <p><strong>Movement:</strong> WASD or Arrow Keys</p>
+                <p><strong>Shooting:</strong> Click mouse to shoot</p>
+                <p><strong>Goal:</strong> Survive as long as possible!</p>
+                <br>
+                <p><strong>Enemy Types:</strong></p>
+                <p>• Basic (Red) - Standard enemy</p>
+                <p>• Fast (Orange) - Quick but weak</p>
+                <p>• Tank (Dark Red) - Slow but tough</p>
+                <p>• Shooter (Pink) - Shoots at you</p>
+                <p>• Exploder (Magenta) - Explodes on contact</p>
+                <br>
+                <button onclick="showInstructions()">Back</button>
+            </div>
         </div>
     </div>
 
