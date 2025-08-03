@@ -1,6 +1,7 @@
 import { Player } from './player.js';
 import { Enemy } from './enemy.js';
 import { DeathAnimation } from './animations.js';
+import { FPSMeter } from './debug.js';
 
 class Camera {
     constructor(width, height) {
@@ -45,6 +46,8 @@ class Game {
         this.camera = new Camera(this.width, this.height);
         this.deathAnimations = [];
 
+        this.gameState = 'menu'; // 'menu', 'playing', 'paused', 'gameOver'
+
         this.isRunning = false;
         this.score = 0;
         this.wave = 1;
@@ -60,25 +63,66 @@ class Game {
         this.enemySpawnTimer = 0;
         this.waveTimer = 0;
 
+        this.fpsMeter = new FPSMeter();
+
         this.init();
     }
 
     init() {
         this.setupEventListeners();
+        this.showMenu();
+        this.gameLoop();
+    }
+
+    showMenu() {
+        this.gameState = 'menu';
+        this.isRunning = false;
+        document.getElementById('mainMenu').style.display = 'flex';
+        document.getElementById('ui').style.display = 'none';
+        document.getElementById('gameOver').style.display = 'none';
+    }
+
+    startNewGame() {
+        this.gameState = 'playing';
+        this.isRunning = true;
+
+        this.score = 0;
+        this.wave = 1;
+        this.bullets = [];
+        this.enemies = [];
+        this.enemyBullets = [];
+        this.deathAnimations = [];
+
         this.player = new Player(this.worldWidth / 2, this.worldHeight / 2);
-        this.start();
+        this.enemySpawnTimer = 0;
+        this.waveTimer = 0;
+
+        this.camera.x = 0;
+        this.camera.y = 0;
+
+        document.getElementById('mainMenu').style.display = 'none';
+        document.getElementById('ui').style.display = 'block';
+        document.getElementById('gameOver').style.display = 'none';
+
+        this.showFPS = document.getElementById('fpsToggle').checked;
     }
 
     setupEventListeners() {
-
         document.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
+
+            if (e.code === 'Escape') {
+                if (this.gameState === 'playing') {
+                    this.pauseGame();
+                } else if (this.gameState === 'paused') {
+                    this.resumeGame();
+                }
+            }
         });
 
         document.addEventListener('keyup', (e) => {
             this.keys[e.code] = false;
         });
-
 
         this.canvas.addEventListener('mousemove', (e) => {
             const rect = this.canvas.getBoundingClientRect();
@@ -87,10 +131,20 @@ class Game {
         });
 
         this.canvas.addEventListener('click', (e) => {
-            if (this.isRunning) {
+            if (this.gameState === 'playing') {
                 this.player.shoot(this.mouse.x, this.mouse.y, this.bullets, this.camera);
             }
         });
+    }
+
+    pauseGame() {
+        this.gameState = 'paused';
+        this.isRunning = false;
+    }
+
+    resumeGame() {
+        this.gameState = 'playing';
+        this.isRunning = true;
     }
 
     start() {
@@ -99,14 +153,16 @@ class Game {
     }
 
     gameLoop(currentTime = 0) {
-        if (!this.isRunning) return;
-
         const deltaTime = currentTime - this.lastTime;
         this.lastTime = currentTime;
 
-        this.update(deltaTime);
-        this.render();
+        this.fpsMeter.update(currentTime);
 
+        if (this.gameState === 'playing') {
+            this.update(deltaTime);
+        }
+
+        this.render();
         requestAnimationFrame((time) => this.gameLoop(time));
     }
 
@@ -144,7 +200,7 @@ class Game {
         }
 
         this.enemySpawnTimer += deltaTime;
-        if (this.enemySpawnTimer > 1000) {
+        if (this.enemySpawnTimer > 500) {
             this.spawnEnemy();
             this.enemySpawnTimer = 0;
         }
@@ -167,17 +223,59 @@ class Game {
         this.ctx.fillStyle = '#2a2a2a';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        this.drawGrid();
+        if (this.gameState === 'playing') {
+            this.drawGrid();
+            this.player.render(this.ctx, this.camera);
+            this.bullets.forEach(bullet => bullet.render(this.ctx, this.camera));
+            this.enemies.forEach(enemy => enemy.render(this.ctx, this.camera));
+            this.enemyBullets.forEach(bullet => bullet.render(this.ctx, this.camera));
+            this.deathAnimations.forEach(animation => animation.render(this.ctx, this.camera));
+            this.drawWorldBounds();
+        } else if (this.gameState === 'menu') {
+            this.drawMenuBackground();
+        } else if (this.gameState === 'paused') {
+            this.drawGrid();
+            this.player.render(this.ctx, this.camera);
+            this.bullets.forEach(bullet => bullet.render(this.ctx, this.camera));
+            this.enemies.forEach(enemy => enemy.render(this.ctx, this.camera));
+            this.enemyBullets.forEach(bullet => bullet.render(this.ctx, this.camera));
+            this.deathAnimations.forEach(animation => animation.render(this.ctx, this.camera));
+            this.drawWorldBounds();
 
-        this.player.render(this.ctx, this.camera);
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.fillRect(0, 0, this.width, this.height);
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.font = 'bold 32px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('PAUSED', this.width / 2, this.height / 2);
+            this.ctx.font = '16px Arial';
+            this.ctx.fillText('Press ESC to resume', this.width / 2, this.height / 2 + 40);
+        }
 
-        this.bullets.forEach(bullet => bullet.render(this.ctx, this.camera));
-        this.enemies.forEach(enemy => enemy.render(this.ctx, this.camera));
-        this.enemyBullets.forEach(bullet => bullet.render(this.ctx, this.camera));
+        if (this.showFPS) {
+            this.fpsMeter.render(this.ctx);
+        }
+    }
 
-        this.deathAnimations.forEach(animation => animation.render(this.ctx, this.camera));
+    drawMenuBackground() {
+        const time = Date.now() * 0.001;
+        for (let i = 0; i < 50; i++) {
+            const x = (Math.sin(time + i) * 200 + this.width / 2) % this.width;
+            const y = (Math.cos(time + i * 0.5) * 150 + this.height / 2) % this.height;
+            const size = Math.sin(time + i * 2) * 3 + 5;
 
-        this.drawWorldBounds();
+            this.ctx.fillStyle = `rgba(76, 175, 80, ${0.1 + Math.sin(time + i) * 0.1})`;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, size, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+    }
+
+    gameOver() {
+        this.gameState = 'gameOver';
+        this.isRunning = false;
+        document.getElementById('finalScore').textContent = this.score;
+        document.getElementById('gameOver').style.display = 'block';
     }
 
     drawGrid() {
@@ -315,31 +413,8 @@ class Game {
         document.getElementById('wave').textContent = this.wave;
     }
 
-    gameOver() {
-        this.isRunning = false;
-        document.getElementById('finalScore').textContent = this.score;
-        document.getElementById('gameOver').style.display = 'block';
-    }
-
     restart() {
-
-        this.score = 0;
-        this.wave = 1;
-        this.bullets = [];
-        this.enemies = [];
-        this.enemyBullets = [];
-        this.deathAnimations = [];
-
-        this.player = new Player(this.worldWidth / 2, this.worldHeight / 2);
-        this.enemySpawnTimer = 0;
-        this.waveTimer = 0;
-
-        this.camera.x = 0;
-        this.camera.y = 0;
-
-        document.getElementById('gameOver').style.display = 'none';
-
-        this.start();
+        this.startNewGame();
     }
 }
 
