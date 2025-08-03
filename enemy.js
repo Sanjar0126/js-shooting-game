@@ -205,19 +205,43 @@ class Enemy {
                 ctx.strokeStyle = '#ff6600';
                 ctx.lineWidth = 2;
                 ctx.stroke();
+
+                // ctx.globalAlpha = 0.3;
+                // for (let i = 1; i <= 3; i++) {
+                //     ctx.translate(-i * 3, 0);
+                //     ctx.beginPath();
+                //     ctx.moveTo(this.radius * 0.8, 0);
+                //     ctx.lineTo(-this.radius * 0.5, -this.radius * 0.5);
+                //     ctx.lineTo(-this.radius * 0.5, this.radius * 0.5);
+                //     ctx.closePath();
+                //     ctx.fill();
+                // }
+                // ctx.globalAlpha = 1.0;
+
                 break;
 
             case TankEnemy: //square
+                const tankAngle = Math.atan2(this.targetY - this.y, this.targetX - this.x);
+                ctx.translate(screenX, screenY);
+                ctx.rotate(tankAngle);
+
                 const size = this.radius * 0.8;
-                ctx.fillRect(screenX - size, screenY - size, size * 2, size * 2);
+                ctx.fillRect(-size, -size, size * 2, size * 2);
 
                 ctx.strokeStyle = '#660000';
                 ctx.lineWidth = 3;
-                ctx.strokeRect(screenX - size, screenY - size, size * 2, size * 2);
+                ctx.strokeRect(-size, -size, size * 2, size * 2);
 
                 ctx.fillStyle = '#aa6666';
                 const innerSize = size * 0.5;
-                ctx.fillRect(screenX - innerSize, screenY - innerSize, innerSize * 2, innerSize * 2);
+                ctx.fillRect(-innerSize, -innerSize, innerSize * 2, innerSize * 2);
+
+                ctx.fillStyle = '#ffff00';
+                ctx.fillRect(size * 0.5, -size * 0.3, size * 0.8, size * 0.6);
+
+                ctx.fillStyle = '#333333';
+                ctx.fillRect(-size * 1.1, -size * 0.3, size * 2.2, size * 0.2);
+                ctx.fillRect(-size * 1.1, size * 0.1, size * 2.2, size * 0.2);
                 break;
 
             case ShooterEnemy: //hexagon
