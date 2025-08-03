@@ -13,6 +13,9 @@ class Enemy {
         this.type = type;
         this.lifetime = 0;
 
+        this.targetX = x;
+        this.targetY = y;
+
         this.setTypeProperties();
     }
 
@@ -52,6 +55,9 @@ class Enemy {
         const dy = player.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
+        this.targetX = player.x;
+        this.targetY = player.y;
+
         if (distance > 0) {
             this.x += (dx / distance) * this.speed * (deltaTime / 1000);
             this.y += (dy / distance) * this.speed * (deltaTime / 1000);
@@ -59,10 +65,13 @@ class Enemy {
     }
 
     updateShooter(deltaTime, player, bullets) {
-        //stop at shooting range
+        //stop when shooting 
         const dx = player.x - this.x;
         const dy = player.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
+
+        this.targetX = player.x;
+        this.targetY = player.y;
 
         //move away when close
         if (distance > this.shootRange + 20) {
@@ -94,6 +103,9 @@ class Enemy {
         const dx = player.x - this.x;
         const dy = player.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
+
+        this.targetX = player.x;
+        this.targetY = player.y;
 
         if (distance > 0) {
             let currentSpeed = this.speed;
@@ -161,40 +173,133 @@ class Enemy {
                 ctx.fill();
             }
 
-            //enemy body
             ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
-            ctx.fill();
+            this.drawEnemyShape(ctx, screenX, screenY);
 
-            //enemy type
-            ctx.fillStyle = 'white';
-            ctx.font = '10px Arial';
-            ctx.textAlign = 'center';
-            let typeChar = '';
-            switch (this.type) {
-                case FastEnemy: typeChar = 'F'; break;
-                case TankEnemy: typeChar = 'T'; break;
-                case ShooterEnemy: typeChar = 'S'; break;
-                case ExploderEnemy: typeChar = 'E'; break;
-            }
-            if (typeChar) {
-                ctx.fillText(typeChar, screenX, screenY + 3);
-            }
-
-            //health bar
-            const barWidth = Math.max(20, this.radius * 1.5);
-            const barHeight = 3;
-            const barX = screenX - barWidth / 2;
-            const barY = screenY - this.radius - 8;
-
-            ctx.fillStyle = '#ff0000';
-            ctx.fillRect(barX, barY, barWidth, barHeight);
-
-            ctx.fillStyle = '#00ff00';
-            const healthPercent = this.health / this.maxHealth;
-            ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+            this.drawHealthBar(ctx, screenX, screenY);
         }
+    }
+
+    drawEnemyShape(ctx, screenX, screenY) {
+        ctx.save();
+
+        switch (this.type) {
+            case BasicEnemy: //circle
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+
+            case FastEnemy: //triangle
+                const angle = Math.atan2(this.targetY - this.y, this.targetX - this.x) || 0;
+                ctx.translate(screenX, screenY);
+                ctx.rotate(angle);
+
+                ctx.beginPath();
+                ctx.moveTo(this.radius, 0);
+                ctx.lineTo(-this.radius * 0.7, -this.radius * 0.7);
+                ctx.lineTo(-this.radius * 0.7, this.radius * 0.7);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#ff6600';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                break;
+
+            case TankEnemy: //square
+                const size = this.radius * 0.8;
+                ctx.fillRect(screenX - size, screenY - size, size * 2, size * 2);
+
+                ctx.strokeStyle = '#660000';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(screenX - size, screenY - size, size * 2, size * 2);
+
+                ctx.fillStyle = '#aa6666';
+                const innerSize = size * 0.5;
+                ctx.fillRect(screenX - innerSize, screenY - innerSize, innerSize * 2, innerSize * 2);
+                break;
+
+            case ShooterEnemy: //hexagon
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const hexAngle = (i * Math.PI) / 3;
+                    const x = screenX + Math.cos(hexAngle) * this.radius;
+                    const y = screenY + Math.sin(hexAngle) * this.radius;
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.fill();
+
+                const gunAngle = Math.atan2(this.targetY - this.y, this.targetX - this.x) || 0;
+                ctx.strokeStyle = '#aa0044';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY);
+                ctx.lineTo(
+                    screenX + Math.cos(gunAngle) * (this.radius + 8),
+                    screenY + Math.sin(gunAngle) * (this.radius + 8)
+                );
+                ctx.stroke();
+                break;
+
+            case ExploderEnemy: //star
+                const pulseSize = this.radius + Math.sin(this.lifetime * 0.01) * 3;
+                const spikes = 8;
+                const outerRadius = pulseSize;
+                const innerRadius = pulseSize * 0.5;
+
+                ctx.beginPath();
+                for (let i = 0; i < spikes * 2; i++) {
+                    const starAngle = (i * Math.PI) / spikes;
+                    const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                    const x = screenX + Math.cos(starAngle) * radius;
+                    const y = screenY + Math.sin(starAngle) * radius;
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.fill();
+
+                if (this.isExploding || this.color === '#ffffff') {
+                    ctx.shadowColor = '#ff44ff';
+                    ctx.shadowBlur = 10;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+                break;
+        }
+
+        ctx.restore();
+    }
+
+
+    drawHealthBar(ctx, screenX, screenY) {
+        const barWidth = Math.max(20, this.radius * 1.5);
+        const barHeight = 3;
+        const barX = screenX - barWidth / 2;
+        const barY = screenY - this.radius - 12;
+
+        //backgrond
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        //health
+        ctx.fillStyle = '#00ff00';
+        const healthPercent = this.health / this.maxHealth;
+        ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+
+        //border
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
     }
 }
 
