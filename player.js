@@ -8,9 +8,15 @@ class Player {
         this.maxHealth = 100;
         this.lastShot = 0;
         this.shootCooldown = 200;
+        this.isDead = false;
+        this.deathTimer = 0;
     }
 
     update(deltaTime, keys) {
+        if (this.isDead) {
+            this.deathTimer += deltaTime;
+            return;
+        }
 
         let dx = 0;
         let dy = 0;
@@ -35,8 +41,9 @@ class Player {
     }
 
     shoot(targetX, targetY, bullets, camera) {
-        if (this.lastShot < this.shootCooldown) return;
+        if (this.isDead || this.lastShot < this.shootCooldown) return;
 
+        if (this.lastShot < this.shootCooldown) return;
 
         const worldTargetX = targetX + camera.x;
         const worldTargetY = targetY + camera.y;
@@ -50,20 +57,22 @@ class Player {
     }
 
     takeDamage(damage) {
+        if (this.isDead) return;
+
         this.health -= damage;
         if (this.health < 0) this.health = 0;
     }
 
     render(ctx, camera) {
+        if (this.isDead) return;
+
         const screenX = this.x - camera.x;
         const screenY = this.y - camera.y;
-
 
         ctx.fillStyle = '#4CAF50';
         ctx.beginPath();
         ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
         ctx.fill();
-
 
         const barWidth = 30;
         const barHeight = 4;
