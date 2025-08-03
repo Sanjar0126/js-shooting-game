@@ -1,5 +1,13 @@
+import { ENEMY_CONFIG } from './enemyConfig.js';
+
+const BasicEnemy = 'basic';
+const FastEnemy = 'fast';
+const TankEnemy = 'tank';
+const ShooterEnemy = 'shooter';
+const ExploderEnemy = 'exploder';
+
 class Enemy {
-    constructor(x, y, type = 'basic') {
+    constructor(x, y, type = BasicEnemy) {
         this.x = x;
         this.y = y;
         this.type = type;
@@ -9,81 +17,31 @@ class Enemy {
     }
 
     setTypeProperties() {
-        switch (this.type) {
-            case 'basic':
-                this.radius = 12;
-                this.speed = 50;
-                this.health = 50;
-                this.maxHealth = 50;
-                this.damage = 20;
-                this.color = '#ff4444';
-                this.scoreValue = 10;
-                break;
+        const config = ENEMY_CONFIG[this.type];
+        if (!config) throw new Error(`Unknown enemy type: ${this.type}`);
 
-            case 'fast':
-                this.radius = 8;
-                this.speed = 120;
-                this.health = 25;
-                this.maxHealth = 25;
-                this.damage = 15;
-                this.color = '#ff8844';
-                this.scoreValue = 15;
-                break;
-
-            case 'tank':
-                this.radius = 18;
-                this.speed = 25;
-                this.health = 150;
-                this.maxHealth = 150;
-                this.damage = 35;
-                this.color = '#884444';
-                this.scoreValue = 25;
-                break;
-
-            case 'shooter':
-                this.radius = 10;
-                this.speed = 30;
-                this.health = 40;
-                this.maxHealth = 40;
-                this.damage = 15;
-                this.color = '#ff4488';
-                this.scoreValue = 20;
-                this.lastShot = 0;
-                this.shootCooldown = 2000;
-                this.shootRange = 200;
-                break;
-
-            case 'exploder':
-                this.radius = 14;
-                this.speed = 80;
-                this.health = 30;
-                this.maxHealth = 30;
-                this.damage = 50;
-                this.color = '#ff44ff';
-                this.scoreValue = 30;
-                this.explosionRadius = 60;
-                this.isExploding = false;
-                this.explosionTimer = 0;
-                this.explosionDuration = 500;
-                break;
+        for (const key in config) {
+            this[key] = config[key];
         }
+
+        this.maxHealth = this.health;
     }
 
     update(deltaTime, player, bullets = null) {
         this.lifetime += deltaTime;
 
         switch (this.type) {
-            case 'basic':
-            case 'fast':
-            case 'tank':
+            case BasicEnemy:
+            case FastEnemy:
+            case TankEnemy:
                 this.updateBasicMovement(deltaTime, player);
                 break;
 
-            case 'shooter':
+            case ShooterEnemy:
                 this.updateShooter(deltaTime, player, bullets);
                 break;
 
-            case 'exploder':
+            case ExploderEnemy:
                 this.updateExploder(deltaTime, player);
                 break;
         }
@@ -172,7 +130,7 @@ class Enemy {
     takeDamage(damage) {
         this.health -= damage;
 
-        if (this.type === 'exploder' && this.health <= 0 && !this.isExploding) {
+        if (this.type === ExploderEnemy && this.health <= 0 && !this.isExploding) {
             this.health = 1;
 
             this.isExploding = true;
@@ -188,7 +146,7 @@ class Enemy {
             screenY > -50 && screenY < camera.height + 50) {
 
             //explosion effect
-            if (this.type === 'exploder' && this.isExploding) {
+            if (this.type === ExploderEnemy && this.isExploding) {
                 const explosionProgress = this.explosionTimer / this.explosionDuration;
                 const explosionSize = this.explosionRadius * explosionProgress;
 
@@ -215,10 +173,10 @@ class Enemy {
             ctx.textAlign = 'center';
             let typeChar = '';
             switch (this.type) {
-                case 'fast': typeChar = 'F'; break;
-                case 'tank': typeChar = 'T'; break;
-                case 'shooter': typeChar = 'S'; break;
-                case 'exploder': typeChar = 'E'; break;
+                case FastEnemy: typeChar = 'F'; break;
+                case TankEnemy: typeChar = 'T'; break;
+                case ShooterEnemy: typeChar = 'S'; break;
+                case ExploderEnemy: typeChar = 'E'; break;
             }
             if (typeChar) {
                 ctx.fillText(typeChar, screenX, screenY + 3);
