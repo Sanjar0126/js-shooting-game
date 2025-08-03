@@ -41,14 +41,12 @@ class Game {
         this.worldWidth = 3000;
         this.worldHeight = 3000;
 
-
         this.camera = new Camera(this.width, this.height);
-
+        this.deathAnimations = [];
 
         this.isRunning = false;
         this.score = 0;
         this.wave = 1;
-
 
         this.player = null;
         this.bullets = [];

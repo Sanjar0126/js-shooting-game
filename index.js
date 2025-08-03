@@ -2,9 +2,9 @@ import { Game } from './game.js';
 
 let game;
 
-function restartGame() {
+window.restartGame = function() {
     game.restart();
-}
+};
 
 window.addEventListener('load', () => {
     game = new Game();
