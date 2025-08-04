@@ -23,9 +23,14 @@ class Enemy {
         const config = ENEMY_CONFIG[this.type];
         if (!config) throw new Error(`Unknown enemy type: ${this.type}`);
 
+        const difficulty = window.game ? window.game.difficultyMultiplier : 1.0;
+
         for (const key in config) {
             this[key] = config[key];
         }
+
+        this.health = Math.floor(this.health * difficulty);
+        this.damage = Math.floor(this.damage * difficulty);
 
         this.maxHealth = this.health;
     }
