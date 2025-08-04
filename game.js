@@ -50,7 +50,16 @@ class Game {
 
         this.isRunning = false;
         this.score = 0;
+
         this.wave = 1;
+        this.waveTimer = 0;
+        this.waveDuration = 60000; // 60 seconds 
+        this.difficultyMultiplier = 1.0;
+
+        this.playerLevel = 1;
+        this.currentXP = 0;
+        this.xpToNextLevel = 100;
+        this.totalXP = 0;
 
         this.player = null;
         this.bullets = [];
@@ -405,6 +414,43 @@ class Game {
         const dy = obj1.y - obj2.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         return distance < (obj1.radius + obj2.radius);
+    }
+
+    calculateXPRequirement(level) {
+        if (level === 1) return 100;
+        if (level === 2) return 250;
+
+        let totalXP = 100 + 250;
+        for (let i = 3; i <= level; i++) {
+            totalXP += i * 150;
+        }
+        return totalXP;
+    }
+
+    gainExperience(amount) {
+        this.currentXP += amount;
+        this.totalXP += amount;
+
+        while (this.currentXP >= this.xpToNextLevel) {
+            this.levelUp();
+        }
+    }
+
+    levelUp() {
+        this.currentXP -= this.xpToNextLevel;
+        this.playerLevel++;
+
+        const nextLevelTotalXP = this.calculateXPRequirement(this.playerLevel);
+        const currentLevelTotalXP = this.calculateXPRequirement(this.playerLevel - 1);
+        this.xpToNextLevel = nextLevelTotalXP - currentLevelTotalXP;
+
+        console.log(`Level Up! Now level ${this.playerLevel}`);
+
+        this.showLevelUpEffect();
+    }
+
+    showLevelUpEffect() {
+        this.deathAnimations.push(new LevelUpEffect(this.player.x, this.player.y));
     }
 
     updateUI() {
