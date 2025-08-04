@@ -2,6 +2,7 @@ import { Player } from './player.js';
 import { Enemy } from './enemy.js';
 import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
+import { VirtualJoystick } from './virtualJoystick.js';
 
 class Camera {
     constructor(width, height) {
@@ -74,13 +75,37 @@ class Game {
 
         this.fpsMeter = new FPSMeter();
 
+        this.isMobile = this.detectMobile();
+        this.movementJoystick = null;
+        this.shootingJoystick = null;
+
         this.init();
+    }
+
+    detectMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
     }
 
     init() {
         this.setupEventListeners();
+
+        if (this.isMobile) {
+            this.setupMobileControls();
+        }
+
         this.showMenu();
         this.gameLoop();
+    }
+
+    setupMobileControls() {
+        const movementElement = document.getElementById('movementJoystick');
+        const shootingElement = document.getElementById('shootingJoystick');
+
+        if (movementElement && shootingElement) {
+            this.movementJoystick = new VirtualJoystick(movementElement);
+            this.shootingJoystick = new VirtualJoystick(shootingElement);
+        }
     }
 
     showMenu() {
@@ -194,13 +219,41 @@ class Game {
         requestAnimationFrame((time) => this.gameLoop(time));
     }
 
+    handleMobileInput(deltaTime) {
+        const moveValue = this.movementJoystick.getValue();
+
+        this.keys['KeyW'] = moveValue.y < -0.3;
+        this.keys['KeyS'] = moveValue.y > 0.3;
+        this.keys['KeyA'] = moveValue.x < -0.3;
+        this.keys['KeyD'] = moveValue.x > 0.3;
+    }
+
     update(deltaTime) {
+        if (this.isMobile && this.movementJoystick && this.shootingJoystick) {
+            this.handleMobileInput(deltaTime);
+        }
+
         this.player.update(deltaTime, this.keys);
         this.camera.update(this.player);
 
-        if (this.gameState === 'playing' && this.mouse.isPressed) {
+        if (this.isMobile && this.shootingJoystick) {
+            const shootValue = this.shootingJoystick.getValue();
+            if (Math.abs(shootValue.x) > 0.1 || Math.abs(shootValue.y) > 0.1) {
+                const shootTargetX = this.player.x + shootValue.x * 100;
+                const shootTargetY = this.player.y + shootValue.y * 100;
+
+                const screenX = shootTargetX - this.camera.x;
+                const screenY = shootTargetY - this.camera.y;
+
+                this.player.shoot(screenX, screenY, this.bullets, this.camera);
+            }
+        } else if (!this.isMobile && this.mouse.isPressed) {
             this.player.shoot(this.mouse.x, this.mouse.y, this.bullets, this.camera);
         }
+
+        // if (this.gameState === 'playing' && this.mouse.isPressed) {
+        //     this.player.shoot(this.mouse.x, this.mouse.y, this.bullets, this.camera);
+        // }
 
         this.player.x = Math.max(this.player.radius,
             Math.min(this.worldWidth - this.player.radius, this.player.x));
