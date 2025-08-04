@@ -2,15 +2,15 @@ import { Game } from './game.js';
 
 let game;
 
-window.startGame = function() {
+window.startGame = function () {
     game.startNewGame();
 };
 
-window.toggleSettings = function() {
+window.toggleSettings = function () {
     const settings = document.getElementById('settingsPanel');
     const buttons = document.getElementById('menuButtons');
     const instructions = document.getElementById('instructionsPanel');
-    
+
     if (settings.style.display === 'none') {
         settings.style.display = 'block';
         buttons.style.display = 'none';
@@ -21,11 +21,11 @@ window.toggleSettings = function() {
     }
 };
 
-window.showInstructions = function() {
+window.showInstructions = function () {
     const instructions = document.getElementById('instructionsPanel');
     const buttons = document.getElementById('menuButtons');
     const settings = document.getElementById('settingsPanel');
-    
+
     if (instructions.style.display === 'none') {
         instructions.style.display = 'block';
         buttons.style.display = 'none';
@@ -36,11 +36,11 @@ window.showInstructions = function() {
     }
 };
 
-window.restartGame = function() {
+window.restartGame = function () {
     game.restart();
 };
 
-window.returnToMenu = function() {
+window.returnToMenu = function () {
     game.showMenu();
 };
 
@@ -51,3 +51,20 @@ window.returnToMenu = function() {
 window.addEventListener('load', () => {
     game = new Game();
 });
+
+function resizeCanvas() {
+    const canvas = document.getElementById('gameCanvas');
+    const scale = 0.95;
+
+    const width = window.innerWidth * scale;
+    const height = window.innerHeight * scale;
+
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+
+    canvas.width = width;
+    canvas.height = height;
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
