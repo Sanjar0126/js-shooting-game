@@ -1,6 +1,6 @@
 import { Player } from './player.js';
 import { Enemy } from './enemy.js';
-import { DeathAnimation } from './animations.js';
+import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 
 class Camera {
