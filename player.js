@@ -7,7 +7,7 @@ class Player {
         this.health = 100;
         this.maxHealth = 100;
         this.lastShot = 0;
-        this.shootCooldown = 500;
+        this.shootCooldown = 200;
         this.isDead = false;
         this.deathTimer = 0;
     }
