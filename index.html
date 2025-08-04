@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Roguelike Shooter</title>
     <style>
         body {
@@ -148,48 +148,75 @@
         .mobile-controls {
             display: none;
             position: fixed;
-            bottom: 20px;
+            bottom: 0;
             left: 0;
             right: 0;
+            height: 200px;
             z-index: 1000;
             pointer-events: none;
         }
 
         .joystick {
             position: absolute;
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             background: rgba(255, 255, 255, 0.1);
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             pointer-events: all;
             touch-action: none;
+            bottom: 20px;
         }
 
         .joystick:first-child {
-            left: 30px;
+            left: 20px;
         }
 
         .joystick:last-child {
-            right: 30px;
+            right: 20px;
         }
 
         .joystick-knob {
             position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             background: rgba(255, 255, 255, 0.8);
             border-radius: 50%;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            transition: all 0.1s ease;
+            transition: none;
         }
 
-        /* Show mobile controls on touch devices */
         @media (hover: none) and (pointer: coarse) {
             .mobile-controls {
                 display: block;
+            }
+        }
+
+
+        @media screen and (max-width: 768px) {
+            .mobile-controls {
+                display: block;
+            }
+
+            .joystick {
+                width: 80px;
+                height: 80px;
+                bottom: 10px;
+            }
+
+            .joystick:first-child {
+                left: 10px;
+            }
+
+            .joystick:last-child {
+                right: 10px;
+            }
+
+            .joystick-knob {
+                width: 32px;
+                height: 32px;
             }
         }
     </style>
