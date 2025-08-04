@@ -149,13 +149,13 @@ class Game {
         });
 
         this.canvas.addEventListener('mousedown', (e) => {
-            if (e.button === 0) { 
+            if (e.button === 0) {
                 this.mouse.isPressed = true;
             }
         });
 
         this.canvas.addEventListener('mouseup', (e) => {
-            if (e.button === 0) { 
+            if (e.button === 0) {
                 this.mouse.isPressed = false;
             }
         });
@@ -369,39 +369,12 @@ class Game {
         this.ctx.strokeStyle = '#ff0000';
         this.ctx.lineWidth = 3;
 
+        const screenLeft = -this.camera.x;
+        const screenTop = -this.camera.y;
+        const screenRight = this.worldWidth - this.camera.x;
+        const screenBottom = this.worldHeight - this.camera.y;
 
-        if (this.camera.x < 50) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(-this.camera.x, 0);
-            this.ctx.lineTo(-this.camera.x, this.height);
-            this.ctx.stroke();
-        }
-
-
-        if (this.camera.x + this.width > this.worldWidth - 50) {
-            const screenX = this.worldWidth - this.camera.x;
-            this.ctx.beginPath();
-            this.ctx.moveTo(screenX, 0);
-            this.ctx.lineTo(screenX, this.height);
-            this.ctx.stroke();
-        }
-
-
-        if (this.camera.y < 50) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, -this.camera.y);
-            this.ctx.lineTo(this.width, -this.camera.y);
-            this.ctx.stroke();
-        }
-
-
-        if (this.camera.y + this.height > this.worldHeight - 50) {
-            const screenY = this.worldHeight - this.camera.y;
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, screenY);
-            this.ctx.lineTo(this.width, screenY);
-            this.ctx.stroke();
-        }
+        this.ctx.strokeRect(screenLeft, screenTop, this.worldWidth, this.worldHeight);
     }
 
     spawnEnemy() {
