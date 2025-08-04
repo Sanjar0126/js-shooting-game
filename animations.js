@@ -72,4 +72,78 @@ class DeathAnimation {
     }
 }
 
-export { DeathAnimation };
+class LevelUpEffect {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.timer = 0;
+        this.duration = 2000; // 2 seconds
+        this.particles = [];
+        
+        for (let i = 0; i < 20; i++) {
+            this.particles.push({
+                x: this.x,
+                y: this.y,
+                vx: (Math.random() - 0.5) * 150,
+                vy: (Math.random() - 0.5) * 150 - 50, 
+                size: Math.random() * 4 + 2,
+                color: ['#FFD700', '#FFA500', '#FFFF00'][Math.floor(Math.random() * 3)],
+                life: 1.0
+            });
+        }
+    }
+    
+    update(deltaTime) {
+        this.timer += deltaTime;
+        const progress = this.timer / this.duration;
+        
+        this.particles.forEach(particle => {
+            particle.x += particle.vx * (deltaTime / 1000);
+            particle.y += particle.vy * (deltaTime / 1000);
+            particle.vy += 30 * (deltaTime / 1000);
+            particle.life = Math.max(0, 1 - progress);
+            particle.size *= 0.998;
+        });
+        
+        return this.timer >= this.duration;
+    }
+    
+    render(ctx, camera) {
+        const screenX = this.x - camera.x;
+        const screenY = this.y - camera.y;
+        
+        this.particles.forEach(particle => {
+            const particleScreenX = particle.x - camera.x;
+            const particleScreenY = particle.y - camera.y;
+            
+            ctx.save();
+            ctx.globalAlpha = particle.life;
+            ctx.fillStyle = particle.color;
+            ctx.beginPath();
+            ctx.arc(particleScreenX, particleScreenY, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+        
+        if (this.timer < this.duration * 0.6) {
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, 1 - (this.timer / (this.duration * 0.6)));
+            ctx.fillStyle = '#FFD700';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            
+            const textY = screenY - 40 - (this.timer / this.duration) * 20;
+            ctx.strokeText('LEVEL UP!', screenX, textY);
+            ctx.fillText('LEVEL UP!', screenX, textY);
+            
+            ctx.font = '14px Arial';
+            ctx.strokeText(`Level ${game.playerLevel}`, screenX, textY + 25);
+            ctx.fillText(`Level ${game.playerLevel}`, screenX, textY + 25);
+            ctx.restore();
+        }
+    }
+}
+
+export { DeathAnimation, LevelUpEffect };
