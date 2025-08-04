@@ -97,10 +97,19 @@ class Game {
 
         this.score = 0;
         this.wave = 1;
+        this.waveTimer = 0;
+        this.difficultyMultiplier = 1.0;
+
+
         this.bullets = [];
         this.enemies = [];
         this.enemyBullets = [];
         this.deathAnimations = [];
+
+        this.playerLevel = 1;
+        this.currentXP = 0;
+        this.xpToNextLevel = 100;
+        this.totalXP = 0;
 
         this.player = new Player(this.worldWidth / 2, this.worldHeight / 2);
         this.enemySpawnTimer = 0;
@@ -472,13 +481,16 @@ class Game {
     }
 
     showLevelUpEffect() {
-        this.deathAnimations.push(new LevelUpEffect(this.player.x, this.player.y));
+        this.deathAnimations.push(new LevelUpEffect(this.player.x, this.player.y, this.playerLevel));
     }
 
     updateUI() {
         document.getElementById('health').textContent = this.player.health;
         document.getElementById('score').textContent = this.score;
         document.getElementById('wave').textContent = this.wave;
+        document.getElementById('level').textContent = this.playerLevel;
+        document.getElementById('xp').textContent = this.currentXP;
+        document.getElementById('xpNext').textContent = this.xpToNextLevel;
     }
 
     restart() {

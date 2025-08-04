@@ -73,9 +73,12 @@ class DeathAnimation {
 }
 
 class LevelUpEffect {
-    constructor(x, y) {
+    constructor(x, y, playerLevel) {
         this.x = x;
         this.y = y;
+
+        this.playerLevel = playerLevel;
+
         this.timer = 0;
         this.duration = 2000; // 2 seconds
         this.particles = [];
@@ -139,8 +142,8 @@ class LevelUpEffect {
             ctx.fillText('LEVEL UP!', screenX, textY);
             
             ctx.font = '14px Arial';
-            ctx.strokeText(`Level ${game.playerLevel}`, screenX, textY + 25);
-            ctx.fillText(`Level ${game.playerLevel}`, screenX, textY + 25);
+            ctx.strokeText(`Level ${this.playerLevel}`, screenX, textY + 25);
+            ctx.fillText(`Level ${this.playerLevel}`, screenX, textY + 25);
             ctx.restore();
         }
     }

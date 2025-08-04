@@ -6,6 +6,7 @@ export const ENEMY_CONFIG = {
         damage: 20,
         color: '#ff4444',
         scoreValue: 10,
+        xpValue: 10,
     },
     fast: {
         radius: 8,
@@ -14,6 +15,7 @@ export const ENEMY_CONFIG = {
         damage: 15,
         color: '#ff8844',
         scoreValue: 15,
+        xpValue: 20,
     },
     tank: {
         radius: 18,
@@ -22,6 +24,7 @@ export const ENEMY_CONFIG = {
         damage: 35,
         color: '#884444',
         scoreValue: 25,
+        xpValue: 40,
     },
     shooter: {
         radius: 10,
@@ -33,6 +36,7 @@ export const ENEMY_CONFIG = {
         lastShot: 0,
         shootCooldown: 2000,
         shootRange: 200,
+        xpValue: 30,
     },
     exploder: {
         radius: 14,
@@ -45,5 +49,6 @@ export const ENEMY_CONFIG = {
         isExploding: false,
         explosionTimer: 0,
         explosionDuration: 500,
+        xpValue: 35,
     },
 };
