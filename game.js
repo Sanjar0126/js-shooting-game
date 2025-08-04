@@ -66,7 +66,7 @@ class Game {
         this.enemies = [];
 
         this.keys = {};
-        this.mouse = { x: 0, y: 0 };
+        this.mouse = { x: 0, y: 0, isPressed: false };
 
         this.lastTime = 0;
         this.enemySpawnTimer = 0;
@@ -148,10 +148,20 @@ class Game {
             this.mouse.y = e.clientY - rect.top;
         });
 
-        this.canvas.addEventListener('click', (e) => {
-            if (this.gameState === 'playing') {
-                this.player.shoot(this.mouse.x, this.mouse.y, this.bullets, this.camera);
+        this.canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 0) { 
+                this.mouse.isPressed = true;
             }
+        });
+
+        this.canvas.addEventListener('mouseup', (e) => {
+            if (e.button === 0) { 
+                this.mouse.isPressed = false;
+            }
+        });
+
+        this.canvas.addEventListener('mouseleave', () => {
+            this.mouse.isPressed = false;
         });
     }
 
@@ -185,8 +195,17 @@ class Game {
     }
 
     update(deltaTime) {
-        this.player.update(deltaTime, this.keys, this.worldWidth, this.worldHeight);
+        this.player.update(deltaTime, this.keys);
         this.camera.update(this.player);
+
+        if (this.gameState === 'playing' && this.mouse.isPressed) {
+            this.player.shoot(this.mouse.x, this.mouse.y, this.bullets, this.camera);
+        }
+
+        this.player.x = Math.max(this.player.radius,
+            Math.min(this.worldWidth - this.player.radius, this.player.x));
+        this.player.y = Math.max(this.player.radius,
+            Math.min(this.worldHeight - this.player.radius, this.player.y));
 
         this.waveTimer += deltaTime;
         if (this.waveTimer >= this.waveDuration) {
