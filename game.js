@@ -179,6 +179,11 @@ class Game {
         this.player.update(deltaTime, this.keys);
         this.camera.update(this.player);
 
+        this.waveTimer += deltaTime;
+        if (this.waveTimer >= this.waveDuration) {
+            this.nextWave();
+        }
+
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             this.bullets[i].update(deltaTime);
             if (this.bullets[i].isExpired()) {
@@ -189,8 +194,10 @@ class Game {
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             this.enemies[i].update(deltaTime, this.player, this.enemyBullets);
             if (this.enemies[i].health <= 0) {
-                this.deathAnimations.push(new DeathAnimation(this.enemies[i].x, this.enemies[i].y, 'enemy'));
+                this.gainExperience(this.enemies[i].xpValue);
                 this.score += this.enemies[i].scoreValue;
+
+                this.deathAnimations.push(new DeathAnimation(this.enemies[i].x, this.enemies[i].y, 'enemy'));
                 this.enemies.splice(i, 1);
             }
         }
@@ -278,6 +285,21 @@ class Game {
             this.ctx.arc(x, y, size, 0, Math.PI * 2);
             this.ctx.fill();
         }
+    }
+
+    nextWave() {
+        this.wave++;
+        this.waveTimer = 0;
+
+        this.difficultyMultiplier *= 1.08;
+
+        console.log(`Wave ${this.wave}! Difficulty: ${this.difficultyMultiplier.toFixed(2)}x`);
+
+        this.showWaveNotification();
+    }
+
+    showWaveNotification() {
+        console.log(`Wave ${this.wave} begins!`);
     }
 
     gameOver() {
