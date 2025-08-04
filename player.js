@@ -42,13 +42,20 @@ class Player {
         this.lastShot += deltaTime;
     }
 
-    shoot(targetX, targetY, bullets, camera) {
+    shoot(targetX, targetY, bullets, camera, isWorldCoords = false) {
         if (this.isDead || this.lastShot < this.shootCooldown) return;
 
         if (this.lastShot < this.shootCooldown) return;
 
-        const worldTargetX = targetX + camera.x;
-        const worldTargetY = targetY + camera.y;
+        let worldTargetX, worldTargetY
+
+        if (isWorldCoords) {
+            worldTargetX = targetX;
+            worldTargetY = targetY;
+        } else {
+            worldTargetX = targetX + camera.x;
+            worldTargetY = targetY + camera.y;
+        }
 
         const dx = worldTargetX - this.x;
         const dy = worldTargetY - this.y;
