@@ -36,12 +36,10 @@ window.showInstructions = function() {
     }
 };
 
-// Update the restart function
 window.restartGame = function() {
     game.restart();
 };
 
-// Add return to menu function
 window.returnToMenu = function() {
     game.showMenu();
 };
