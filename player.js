@@ -7,12 +7,12 @@ class Player {
         this.health = 100;
         this.maxHealth = 100;
         this.lastShot = 0;
-        this.shootCooldown = 200;
+        this.shootCooldown = 500;
         this.isDead = false;
         this.deathTimer = 0;
     }
 
-    update(deltaTime, keys, worldWidth, worldHeight) {
+    update(deltaTime, keys) {
         if (this.isDead) {
             this.deathTimer += deltaTime;
             return;
@@ -36,8 +36,8 @@ class Player {
         this.x += dx * this.speed * (deltaTime / 1000);
         this.y += dy * this.speed * (deltaTime / 1000);
 
-        this.x = Math.max(this.radius, Math.min(worldWidth - this.radius, this.x));
-        this.y = Math.max(this.radius, Math.min(worldHeight - this.radius, this.y));
+        // this.x = Math.max(this.radius, Math.min(worldWidth - this.radius, this.x));
+        // this.y = Math.max(this.radius, Math.min(worldHeight - this.radius, this.y));
 
         this.lastShot += deltaTime;
     }
