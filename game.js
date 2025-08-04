@@ -185,7 +185,7 @@ class Game {
     }
 
     update(deltaTime) {
-        this.player.update(deltaTime, this.keys);
+        this.player.update(deltaTime, this.keys, this.worldWidth, this.worldHeight);
         this.camera.update(this.player);
 
         this.waveTimer += deltaTime;
