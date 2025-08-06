@@ -10,36 +10,56 @@ class Player {
         this.shootCooldown = 200;
         this.isDead = false;
         this.deathTimer = 0;
+        this.autoShootRange = 800;
     }
 
-    update(deltaTime, keys) {
+    update(deltaTime, keys, mouseWorldPos, enemies, bullets, camera) {
         if (this.isDead) {
             this.deathTimer += deltaTime;
             return;
         }
 
-        let dx = 0;
-        let dy = 0;
+        if (mouseWorldPos) {
+            const dx = mouseWorldPos.x - this.x;
+            const dy = mouseWorldPos.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
-        if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
-        if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
-        if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
+            if (distance > 10) {
+                const moveX = (dx / distance) * this.speed * (deltaTime / 1000);
+                const moveY = (dy / distance) * this.speed * (deltaTime / 1000);
 
-
-        if (dx !== 0 && dy !== 0) {
-            dx *= 0.707;
-            dy *= 0.707;
+                this.x += moveX;
+                this.y += moveY;
+            }
         }
 
-
-        this.x += dx * this.speed * (deltaTime / 1000);
-        this.y += dy * this.speed * (deltaTime / 1000);
-
-        // this.x = Math.max(this.radius, Math.min(worldWidth - this.radius, this.x));
-        // this.y = Math.max(this.radius, Math.min(worldHeight - this.radius, this.y));
-
         this.lastShot += deltaTime;
+
+        this.autoShoot(enemies, bullets, camera, deltaTime);
+    }
+
+    autoShoot(enemies, bullets, camera, deltaTime) {
+        if (this.isDead || this.lastShot < this.shootCooldown) return;
+
+        let nearestEnemy = null;
+        let nearestDistance = this.autoShootRange;
+
+        enemies.forEach(enemy => {
+            const dx = enemy.x - this.x;
+            const dy = enemy.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestEnemy = enemy;
+            }
+        });
+
+        if (nearestEnemy) {
+            const angle = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
+            bullets.push(new Bullet(this.x, this.y, angle));
+            this.lastShot = 0;
+        }
     }
 
     shoot(targetX, targetY, bullets, camera, isWorldCoords = false) {
@@ -86,6 +106,11 @@ class Player {
         ctx.beginPath();
         ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
         ctx.fill();
+
+        // ctx.strokeStyle = 'rgba(255, 255, 0, 0.2)';
+        // ctx.beginPath();
+        // ctx.arc(screenX, screenY, this.autoShootRange, 0, Math.PI * 2);
+        // ctx.stroke();
 
         const barWidth = 30;
         const barHeight = 4;
