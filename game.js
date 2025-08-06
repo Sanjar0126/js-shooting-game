@@ -325,6 +325,11 @@ class Game {
     }
 
     render() {
+        // const dpr = window.devicePixelRatio || 1;
+// 
+        // this.ctx.save();
+        // this.ctx.scale(dpr, dpr);
+
         this.ctx.fillStyle = '#2a2a2a';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
@@ -356,10 +361,13 @@ class Game {
             this.ctx.font = '16px Arial';
             this.ctx.fillText('Press ESC to resume', this.width / 2, this.height / 2 + 40);
         }
-
+        
+        
         if (this.showFPS) {
             this.fpsMeter.render(this.ctx);
         }
+
+        // this.ctx.restore();
     }
 
     drawMenuBackground() {
