@@ -3,7 +3,7 @@ import { Game } from './game.js';
 let game;
 
 window.startGame = function () {
-    game.startNewGame();
+    window.game.startNewGame();
 };
 
 window.toggleSettings = function () {
@@ -37,34 +37,36 @@ window.showInstructions = function () {
 };
 
 window.restartGame = function () {
-    game.restart();
+    window.game.restart();
 };
 
 window.returnToMenu = function () {
-    game.showMenu();
+    window.game.showMenu();
 };
-
-// window.restartGame = function() {
-//     game.restart();
-// };
-
-window.addEventListener('load', () => {
-    game = new Game();
-});
 
 function resizeCanvas() {
     const canvas = document.getElementById('gameCanvas');
     const scale = 0.95;
-
+    
     const width = window.innerWidth * scale;
     const height = window.innerHeight * scale;
-
+    
     canvas.style.width = width + 'px';
     canvas.style.height = height + 'px';
 
     canvas.width = width;
     canvas.height = height;
+    
+    if (window.game) {
+        window.game.handleResize(width, height);
+    }
 }
 
 window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', resizeCanvas);
 resizeCanvas();
+
+window.addEventListener('load', () => {
+    window.game = new Game();
+    setTimeout(resizeCanvas, 100);
+});

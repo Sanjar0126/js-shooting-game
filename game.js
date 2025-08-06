@@ -14,7 +14,6 @@ class Camera {
     }
 
     update(target) {
-
         const targetX = target.x - this.width / 2;
         const targetY = target.y - this.height / 2;
 
@@ -38,6 +37,10 @@ class Game {
         this.ctx = this.canvas.getContext('2d');
         this.width = this.canvas.width;
         this.height = this.canvas.height;
+
+        this.baseWidth = 800;
+        this.baseHeight = 600;
+        this.scale = 1;
 
         this.enemyBullets = [];
 
@@ -139,6 +142,7 @@ class Game {
         this.player = new Player(this.worldWidth / 2, this.worldHeight / 2);
         this.enemySpawnTimer = 0;
         this.waveTimer = 0;
+        this.enemyCount = 0;
 
         this.camera.x = 0;
         this.camera.y = 0;
@@ -169,8 +173,8 @@ class Game {
 
         this.canvas.addEventListener('mousemove', (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            this.mouse.x = e.clientX - rect.left;
-            this.mouse.y = e.clientY - rect.top;
+            this.mouse.x = (e.clientX - rect.left);
+            this.mouse.y = (e.clientY - rect.top);
         });
 
         this.canvas.addEventListener('mousedown', (e) => {
@@ -233,7 +237,12 @@ class Game {
             this.handleMobileInput(deltaTime);
         }
 
-        this.player.update(deltaTime, this.keys);
+        const mouseWorldPos = {
+            x: this.mouse.x + this.camera.x,
+            y: this.mouse.y + this.camera.y
+        };
+
+        this.player.update(deltaTime, this.keys, mouseWorldPos, this.enemies, this.bullets, this.camera);
         this.camera.update(this.player);
 
         if (this.isMobile && this.shootingJoystick) {
@@ -247,11 +256,8 @@ class Game {
 
                 this.player.shoot(screenX, screenY, this.bullets, this.camera);
             }
-        } else if (!this.isMobile && this.mouse.isPressed) {
-            this.player.shoot(this.mouse.x, this.mouse.y, this.bullets, this.camera);
         }
-
-        // if (this.gameState === 'playing' && this.mouse.isPressed) {
+        // else if (!this.isMobile && this.mouse.isPressed) {
         //     this.player.shoot(this.mouse.x, this.mouse.y, this.bullets, this.camera);
         // }
 
@@ -280,6 +286,7 @@ class Game {
 
                 this.deathAnimations.push(new DeathAnimation(this.enemies[i].x, this.enemies[i].y, 'enemy'));
                 this.enemies.splice(i, 1);
+                this.enemyCount--;
             }
         }
 
@@ -300,6 +307,7 @@ class Game {
         if (this.enemySpawnTimer > 500) {
             this.spawnEnemy();
             this.enemySpawnTimer = 0;
+            this.enemyCount++;
         }
 
         this.checkCollisions();
@@ -390,44 +398,56 @@ class Game {
         document.getElementById('gameOver').style.display = 'block';
     }
 
-    drawGrid() {
+    drawGrid(camera = this.camera) {
         const gridSize = 100;
         this.ctx.strokeStyle = '#333';
         this.ctx.lineWidth = 1;
 
+        const startX = Math.floor(camera.x / gridSize) * gridSize;
+        const startY = Math.floor(camera.y / gridSize) * gridSize;
 
-        const startX = Math.floor(this.camera.x / gridSize) * gridSize;
-        const startY = Math.floor(this.camera.y / gridSize) * gridSize;
-
-
-        for (let x = startX; x < this.camera.x + this.width + gridSize; x += gridSize) {
-            const screenX = x - this.camera.x;
+        for (let x = startX; x < camera.x + camera.width + gridSize; x += gridSize) {
+            const screenX = x - camera.x;
             this.ctx.beginPath();
             this.ctx.moveTo(screenX, 0);
-            this.ctx.lineTo(screenX, this.height);
+            this.ctx.lineTo(screenX, camera.height);
             this.ctx.stroke();
         }
 
-
-        for (let y = startY; y < this.camera.y + this.height + gridSize; y += gridSize) {
-            const screenY = y - this.camera.y;
+        for (let y = startY; y < camera.y + camera.height + gridSize; y += gridSize) {
+            const screenY = y - camera.y;
             this.ctx.beginPath();
             this.ctx.moveTo(0, screenY);
-            this.ctx.lineTo(this.width, screenY);
+            this.ctx.lineTo(camera.width, screenY);
             this.ctx.stroke();
         }
     }
 
-    drawWorldBounds() {
+    drawWorldBounds(camera = this.camera) {
         this.ctx.strokeStyle = '#ff0000';
         this.ctx.lineWidth = 3;
 
-        const screenLeft = -this.camera.x;
-        const screenTop = -this.camera.y;
-        const screenRight = this.worldWidth - this.camera.x;
-        const screenBottom = this.worldHeight - this.camera.y;
+        const screenLeft = -camera.x;
+        const screenTop = -camera.y;
+        const screenRight = this.worldWidth - camera.x;
+        const screenBottom = this.worldHeight - camera.y;
 
         this.ctx.strokeRect(screenLeft, screenTop, this.worldWidth, this.worldHeight);
+    }
+
+    handleResize(newWidth, newHeight) {
+        this.width = newWidth;
+        this.height = newHeight;
+
+        this.scale = 1;
+
+        if (this.camera) {
+            this.camera.width = newWidth;
+            this.camera.height = newHeight;
+        }
+
+        this.canvas.width = newWidth;
+        this.canvas.height = newHeight;
     }
 
     spawnEnemy() {
@@ -536,6 +556,8 @@ class Game {
         document.getElementById('level').textContent = this.playerLevel;
         document.getElementById('xp').textContent = this.currentXP;
         document.getElementById('xpNext').textContent = this.xpToNextLevel;
+        document.getElementById('enemyCount').textContent = this.enemyCount;
+        // console.log(this.enemyCount);
     }
 
     restart() {
