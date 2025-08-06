@@ -162,7 +162,6 @@ class Enemy {
         if (screenX > -50 && screenX < camera.width + 50 &&
             screenY > -50 && screenY < camera.height + 50) {
 
-            //explosion effect
             if (this.type === ExploderEnemy && this.isExploding) {
                 const explosionProgress = this.explosionTimer / this.explosionDuration;
                 const explosionSize = this.explosionRadius * explosionProgress;
@@ -210,18 +209,6 @@ class Enemy {
                 ctx.strokeStyle = '#ff6600';
                 ctx.lineWidth = 2;
                 ctx.stroke();
-
-                // ctx.globalAlpha = 0.3;
-                // for (let i = 1; i <= 3; i++) {
-                //     ctx.translate(-i * 3, 0);
-                //     ctx.beginPath();
-                //     ctx.moveTo(this.radius * 0.8, 0);
-                //     ctx.lineTo(-this.radius * 0.5, -this.radius * 0.5);
-                //     ctx.lineTo(-this.radius * 0.5, this.radius * 0.5);
-                //     ctx.closePath();
-                //     ctx.fill();
-                // }
-                // ctx.globalAlpha = 1.0;
 
                 break;
 
