@@ -3,6 +3,7 @@ import { Enemy } from './enemy.js';
 import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
+import { SkillSystem, Fireball, Explosion, SKILL_CONFIG } from './skills.js';
 
 class Camera {
     constructor(width, height) {
@@ -82,6 +83,12 @@ class Game {
         this.movementJoystick = null;
         this.shootingJoystick = null;
 
+        this.skillSystem = new SkillSystem();
+        this.skillProjectiles = [];
+        this.explosions = [];
+        this.showingSkillSelection = false;
+        this.skillChoices = [];
+
         this.init();
     }
 
@@ -140,6 +147,7 @@ class Game {
         this.totalXP = 0;
 
         this.player = new Player(this.worldWidth / 2, this.worldHeight / 2);
+
         this.enemySpawnTimer = 0;
         this.waveTimer = 0;
         this.enemyCount = 0;
@@ -147,9 +155,15 @@ class Game {
         this.camera.x = 0;
         this.camera.y = 0;
 
+        this.skillSystem.reset();
+        this.skillProjectiles = [];
+        this.explosions = [];
+        this.showingSkillSelection = false;
+
         document.getElementById('mainMenu').style.display = 'none';
         document.getElementById('ui').style.display = 'block';
         document.getElementById('gameOver').style.display = 'none';
+        document.getElementById('skillSelection').style.display = 'none';
 
         this.showFPS = document.getElementById('fpsToggle').checked;
     }
@@ -261,10 +275,8 @@ class Game {
         //     this.player.shoot(this.mouse.x, this.mouse.y, this.bullets, this.camera);
         // }
 
-        this.player.x = Math.max(this.player.radius,
-            Math.min(this.worldWidth - this.player.radius, this.player.x));
-        this.player.y = Math.max(this.player.radius,
-            Math.min(this.worldHeight - this.player.radius, this.player.y));
+        this.player.x = Math.max(this.player.radius, Math.min(this.worldWidth - this.player.radius, this.player.x));
+        this.player.y = Math.max(this.player.radius, Math.min(this.worldHeight - this.player.radius, this.player.y));
 
         this.waveTimer += deltaTime;
         if (this.waveTimer >= this.waveDuration) {
@@ -310,6 +322,20 @@ class Game {
             this.enemyCount++;
         }
 
+        for (let i = this.skillProjectiles.length - 1; i >= 0; i--) {
+            if (this.skillProjectiles[i].update(deltaTime, this.enemies, this.explosions)) {
+                this.skillProjectiles.splice(i, 1);
+            }
+        }
+
+        for (let i = this.explosions.length - 1; i >= 0; i--) {
+            if (this.explosions[i].update(deltaTime)) {
+                this.explosions.splice(i, 1);
+            }
+        }
+
+        this.handleSkillInput();
+
         this.checkCollisions();
         this.updateUI();
 
@@ -324,6 +350,66 @@ class Game {
         }
     }
 
+    handleSkillInput() {
+        this.autoUseSkills();
+
+        // if (this.mouse.rightPressed) {
+        //     const worldX = this.mouse.x + this.camera.x;
+        //     const worldY = this.mouse.y + this.camera.y;
+        //     this.manualUseSkill(worldX, worldY);
+        // }
+    }
+
+    autoUseSkills() {
+        const playerSkills = Object.keys(this.player.skills);
+        if (playerSkills.length === 0) return;
+
+        playerSkills.forEach(skillName => {
+            const skill = this.player.skills[skillName];
+            if (!skill || skill.cooldown > 0) return;
+
+            switch (skillName) {
+                case 'fireball':
+                    this.autoUseFireball(skill);
+                    break;
+            }
+        });
+    }
+
+    autoUseFireball(skill) {
+        const range = 400;
+        let nearestEnemy = this.findNearestEnemy(range);
+
+        if (nearestEnemy) {
+            this.player.useSkill(
+                'fireball',
+                nearestEnemy.x,
+                nearestEnemy.y,
+                this.enemies,
+                this.skillProjectiles,
+                this.explosions
+            );
+        }
+    }
+
+    findNearestEnemy(maxRange = Infinity) {
+        let nearestEnemy = null;
+        let nearestDistance = maxRange;
+
+        this.enemies.forEach(enemy => {
+            const dx = enemy.x - this.player.x;
+            const dy = enemy.y - this.player.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestEnemy = enemy;
+            }
+        });
+
+        return nearestEnemy;
+    }
+
     render() {
         this.ctx.fillStyle = '#2a2a2a';
         this.ctx.fillRect(0, 0, this.width, this.height);
@@ -335,6 +421,9 @@ class Game {
             this.enemies.forEach(enemy => enemy.render(this.ctx, this.camera));
             this.enemyBullets.forEach(bullet => bullet.render(this.ctx, this.camera));
             this.deathAnimations.forEach(animation => animation.render(this.ctx, this.camera));
+            this.skillProjectiles.forEach(projectile => projectile.render(this.ctx, this.camera));
+            this.explosions.forEach(explosion => explosion.render(this.ctx, this.camera));
+            this.renderSkillUI();
             this.drawWorldBounds();
         } else if (this.gameState === 'menu') {
             this.drawMenuBackground();
@@ -356,10 +445,44 @@ class Game {
             this.ctx.font = '16px Arial';
             this.ctx.fillText('Press ESC to resume', this.width / 2, this.height / 2 + 40);
         }
-        
+
         if (this.showFPS) {
             this.fpsMeter.render(this.ctx);
         }
+    }
+
+    renderSkillUI() {
+        const skills = Object.keys(this.player.skills);
+        if (skills.length === 0) return;
+
+        const startX = 10;
+        const startY = this.height - 60;
+        const skillSize = 40;
+        const spacing = 50;
+
+        skills.forEach((skillName, index) => {
+            const skill = this.player.skills[skillName];
+            const x = startX + index * spacing;
+            const y = startY;
+
+            this.ctx.fillStyle = skill.cooldown > 0 ? '#666' : '#333';
+            this.ctx.fillRect(x, y, skillSize, skillSize);
+
+            if (skill.cooldown > 0) {
+                const cooldownPercent = skill.cooldown / (3000);
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                this.ctx.fillRect(x, y, skillSize, skillSize * cooldownPercent);
+            }
+
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = '20px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(
+                skillName.charAt(0).toUpperCase(),
+                x + skillSize / 2,
+                y + skillSize / 2 + 7
+            );
+        });
     }
 
     drawMenuBackground() {
@@ -540,9 +663,58 @@ class Game {
         const currentLevelTotalXP = this.calculateXPRequirement(this.playerLevel - 1);
         this.xpToNextLevel = nextLevelTotalXP - currentLevelTotalXP;
 
-        console.log(`Level Up! Now level ${this.playerLevel}`);
+        // console.log(`Level Up! Now level ${this.playerLevel}`);
 
         this.showLevelUpEffect();
+        this.showSkillSelection();
+    }
+
+    showSkillSelection() {
+        this.showingSkillSelection = true;
+        this.isRunning = false;
+        this.skillChoices = this.skillSystem.generateSkillChoices(3);
+
+        this.displaySkillChoices();
+        document.getElementById('skillSelection').style.display = 'block';
+    }
+
+    displaySkillChoices() {
+        const container = document.getElementById('skillChoices');
+        if (!container) {
+            console.error('skillChoices container not found in HTML');
+            return;
+        }
+
+        container.innerHTML = '';
+
+        this.skillChoices.forEach((skillId, index) => {
+            const skill = SKILL_CONFIG[skillId];
+            if (!skill) return;
+
+            const currentLevel = this.skillSystem.getSkillLevel(skillId);
+
+            const button = document.createElement('button');
+            button.className = 'skill-choice';
+            button.innerHTML = `
+                <div class="skill-icon">${skill.icon}</div>
+                <div class="skill-name">${skill.name}</div>
+                <div class="skill-level">Level ${currentLevel + 1}/${skill.maxLevel}</div>
+                <div class="skill-type">${skill.type.toUpperCase()}</div>
+                <div class="skill-description">${skill.description}</div>`;
+
+            button.onclick = () => this.selectSkill(skillId);
+            container.appendChild(button);
+        });
+    }
+
+    selectSkill(skillId) {
+        if (this.skillSystem.selectSkill(skillId, this.player)) {
+            this.showingSkillSelection = false;
+            this.isRunning = true;
+            document.getElementById('skillSelection').style.display = 'none';
+
+            console.log(`Selected skill: ${skillId}`);
+        }
     }
 
     showLevelUpEffect() {
@@ -564,5 +736,9 @@ class Game {
         this.startNewGame();
     }
 }
+
+window.SKILL_CONFIG = SKILL_CONFIG;
+window.Fireball = Fireball;
+window.Explosion = Explosion;
 
 export { Game };

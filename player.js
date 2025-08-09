@@ -1,7 +1,7 @@
 class Player {
     constructor(x, y) {
-        this.x = x;
-        this.y = y;
+        this.x = x || 0;
+        this.y = y || 0;
 
         this.baseSpeed = 200;
         this.baseHealth = 100;
@@ -31,6 +31,8 @@ class Player {
 
         this.isShielded = false;
         this.shieldTimer = 0;
+
+        this.radius = 15;
     }
 
     update(deltaTime, keys, mouseWorldPos, enemies, bullets, camera) {
@@ -90,10 +92,11 @@ class Player {
 
         switch (skillName) {
             case 'fireball':
-                skillProjectiles.push(new window.Fireball(
+                const fireball = new window.Fireball(
                     this.x, this.y, targetX, targetY,
                     skill.damage, skill.radius
-                ));
+                );
+                skillProjectiles.push(fireball);
                 skill.cooldown = 3000 - (skill.level - 1) * 200;
                 break;
         }
