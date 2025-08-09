@@ -165,6 +165,17 @@ class Player {
         const screenX = this.x - camera.x;
         const screenY = this.y - camera.y;
 
+        if (this.isShielded) {
+            ctx.save();
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, this.radius + 8, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
         ctx.fillStyle = '#4CAF50';
         ctx.beginPath();
         ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
