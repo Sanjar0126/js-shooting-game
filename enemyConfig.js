@@ -6,7 +6,7 @@ export const ENEMY_CONFIG = {
         damage: 20,
         color: '#ff4444',
         scoreValue: 10,
-        xpValue: 100,
+        xpValue: 10,
     },
     fast: {
         radius: 8,

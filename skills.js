@@ -331,7 +331,7 @@ export class Fireball {
             const dy = enemy.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < this.explosionRadius) {
+            if (distance < (this.radius + enemy.radius)) {
                 this.explode(enemies, explosions);
                 return true;
             }
