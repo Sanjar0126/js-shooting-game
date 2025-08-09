@@ -2,15 +2,35 @@ class Player {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.radius = 15;
-        this.speed = 200;
-        this.health = 100;
-        this.maxHealth = 100;
+
+        this.baseSpeed = 200;
+        this.baseHealth = 100;
+        this.baseShootCooldown = 500;
+        this.baseDamage = 25;
+        this.baseBulletSpeed = 400;
+        this.baseAutoShootRange = 800;
+
+        this.speed = this.baseSpeed;
+        this.health = this.baseHealth;
+        this.maxHealth = this.baseHealth;
+        this.shootCooldown = this.baseShootCooldown;
+        this.autoShootRange = this.baseAutoShootRange;
+
+        this.speedMultiplier = 1.0;
+        this.damageMultiplier = 1.0;
+        this.shootCooldownMultiplier = 1.0;
+        this.bulletSpeedMultiplier = 1.0;
+
+        this.skills = {};
+
         this.lastShot = 0;
-        this.shootCooldown = 200;
         this.isDead = false;
         this.deathTimer = 0;
-        this.autoShootRange = 800;
+        this.regenTimer = 0;
+        this.healthRegen = 0;
+
+        this.isShielded = false;
+        this.shieldTimer = 0;
     }
 
     update(deltaTime, keys, mouseWorldPos, enemies, bullets, camera) {
@@ -19,14 +39,33 @@ class Player {
             return;
         }
 
+        this.updateSkillCooldowns(deltaTime);
+
+        if (this.isShielded) {
+            this.shieldTimer -= deltaTime;
+            if (this.shieldTimer <= 0) {
+                this.isShielded = false;
+            }
+        }
+
+        if (this.healthRegen > 0) {
+            this.regenTimer += deltaTime;
+            if (this.regenTimer >= 1000) {
+                this.health = Math.min(this.maxHealth, this.health + this.healthRegen);
+                this.regenTimer = 0;
+            }
+        }
+
+        const currentSpeed = this.baseSpeed * this.speedMultiplier;
+
         if (mouseWorldPos) {
             const dx = mouseWorldPos.x - this.x;
             const dy = mouseWorldPos.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 10) {
-                const moveX = (dx / distance) * this.speed * (deltaTime / 1000);
-                const moveY = (dy / distance) * this.speed * (deltaTime / 1000);
+                const moveX = (dx / distance) * currentSpeed * (deltaTime / 1000);
+                const moveY = (dy / distance) * currentSpeed * (deltaTime / 1000);
 
                 this.x += moveX;
                 this.y += moveY;
@@ -34,8 +73,32 @@ class Player {
         }
 
         this.lastShot += deltaTime;
-
         this.autoShoot(enemies, bullets, camera, deltaTime);
+    }
+
+    updateSkillCooldowns(deltaTime) {
+        Object.keys(this.skills).forEach(skillName => {
+            if (this.skills[skillName].cooldown > 0) {
+                this.skills[skillName].cooldown -= deltaTime;
+            }
+        });
+    }
+
+    useSkill(skillName, targetX, targetY, enemies, skillProjectiles, explosions) {
+        const skill = this.skills[skillName];
+        if (!skill || skill.cooldown > 0) return false;
+
+        switch (skillName) {
+            case 'fireball':
+                skillProjectiles.push(new window.Fireball(
+                    this.x, this.y, targetX, targetY,
+                    skill.damage, skill.radius
+                ));
+                skill.cooldown = 3000 - (skill.level - 1) * 200;
+                break;
+        }
+
+        return true;
     }
 
     autoShoot(enemies, bullets, camera, deltaTime) {

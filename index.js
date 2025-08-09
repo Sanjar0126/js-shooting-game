@@ -1,7 +1,5 @@
 import { Game } from './game.js';
 
-let game;
-
 window.startGame = function () {
     window.game.startNewGame();
 };
