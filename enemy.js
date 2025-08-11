@@ -38,24 +38,32 @@ class Enemy {
     update(deltaTime, player, bullets = null) {
         this.lifetime += deltaTime;
 
+        let speedMultiplier = 1;
+        if (this.slowTimer > 0) {
+            this.slowTimer -= deltaTime;
+            speedMultiplier = this.slowAmount;
+        }
+
+        const effectiveSpeed = this.speed * speedMultiplier;
+
         switch (this.type) {
             case BasicEnemy:
             case FastEnemy:
             case TankEnemy:
-                this.updateBasicMovement(deltaTime, player);
+                this.updateBasicMovement(deltaTime, player, effectiveSpeed);
                 break;
 
             case ShooterEnemy:
-                this.updateShooter(deltaTime, player, bullets);
+                this.updateShooter(deltaTime, player, bullets, effectiveSpeed);
                 break;
 
             case ExploderEnemy:
-                this.updateExploder(deltaTime, player);
+                this.updateExploder(deltaTime, player, effectiveSpeed);
                 break;
         }
     }
 
-    updateBasicMovement(deltaTime, player) {
+    updateBasicMovement(deltaTime, player, speed = this.speed) {
         const dx = player.x - this.x;
         const dy = player.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -64,12 +72,12 @@ class Enemy {
         this.targetY = player.y;
 
         if (distance > 0) {
-            this.x += (dx / distance) * this.speed * (deltaTime / 1000);
-            this.y += (dy / distance) * this.speed * (deltaTime / 1000);
+            this.x += (dx / distance) * speed * (deltaTime / 1000);
+            this.y += (dy / distance) * speed * (deltaTime / 1000);
         }
     }
 
-    updateShooter(deltaTime, player, bullets) {
+    updateShooter(deltaTime, player, bullets, speed = this.speed) {
         //stop when shooting 
         const dx = player.x - this.x;
         const dy = player.y - this.y;
@@ -80,11 +88,11 @@ class Enemy {
 
         //move away when close
         if (distance > this.shootRange + 20) {
-            this.x += (dx / distance) * this.speed * (deltaTime / 1000);
-            this.y += (dy / distance) * this.speed * (deltaTime / 1000);
+            this.x += (dx / distance) * speed * (deltaTime / 1000);
+            this.y += (dy / distance) * speed * (deltaTime / 1000);
         } else if (distance < this.shootRange - 20) {
-            this.x -= (dx / distance) * this.speed * 0.5 * (deltaTime / 1000);
-            this.y -= (dy / distance) * this.speed * 0.5 * (deltaTime / 1000);
+            this.x -= (dx / distance) * speed * 0.5 * (deltaTime / 1000);
+            this.y -= (dy / distance) * speed * 0.5 * (deltaTime / 1000);
         }
 
         //shooting
@@ -96,7 +104,7 @@ class Enemy {
         }
     }
 
-    updateExploder(deltaTime, player) {
+    updateExploder(deltaTime, player, speed = this.speed) {
         if (this.isExploding) {
             this.explosionTimer += deltaTime;
             if (this.explosionTimer >= this.explosionDuration) {
@@ -113,7 +121,7 @@ class Enemy {
         this.targetY = player.y;
 
         if (distance > 0) {
-            let currentSpeed = this.speed;
+            let currentSpeed = speed;
             if (distance < 100) {
                 currentSpeed *= 1.5;
                 this.color = Math.floor(this.lifetime / 100) % 2 ? '#ff44ff' : '#ffffff';
@@ -182,6 +190,12 @@ class Enemy {
 
             this.drawHealthBar(ctx, screenX, screenY);
         }
+    }
+
+    applySlow(slowAmount, duration) {
+        this.slowAmount = slowAmount;
+        this.slowDuration = duration;
+        this.slowTimer = duration;
     }
 
     drawEnemyShape(ctx, screenX, screenY) {
