@@ -100,12 +100,11 @@ class Player {
                 skill.cooldown = 3000 - (skill.level - 1) * 200;
                 break;
             case 'chainLightning':
-                const chainLightning = new window.ChainLightning(
-                    this.x, this.y, targetX, targetY,
-                    skill.damage, skill.radius, skill.chainCount
-                );
-                skillProjectiles.push(chainLightning);
-                skill.cooldown = 5000 - (skill.level - 1) * 300;
+                skillProjectiles.push(new window.ChainLightning(
+                    this.x, this.y, enemies,
+                    skill.damage, skill.chains, skill.range
+                ));
+                skill.cooldown = 3000 - (skill.level - 1) * 300;
                 break;
         }
 

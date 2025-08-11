@@ -359,68 +359,85 @@ export class Fireball {
 }
 
 export class ChainLightning {
-    constructor(x, y, targetX, targetY, damage, radius, chainCount) {
-        this.x = x;
-        this.y = y;
-        this.damage = damage;
-        this.radius = radius;
-        this.chainCount = chainCount;
+  constructor(x, y, enemies, damage, chains, range) {
+    this.x = x;
+    this.y = y;
+    this.damage = damage;
+    this.chains = chains;
+    this.range = range;
+    this.hitEnemies = new Set();
+    this.lightningChain = [];
+    this.duration = 500;
+    this.timer = 0;
+    
+    this.createChain(enemies);
+  }
 
-        const dx = targetX - x;
-        const dy = targetY - y;
+  createChain(enemies) {
+    let currentPos = { x: this.x, y: this.y };
+    
+    for (let i = 0; i < this.chains && enemies.length > 0; i++) {
+      let nearestEnemy = null;
+      let nearestDistance = this.range;
+      
+      enemies.forEach(enemy => {
+        if (this.hitEnemies.has(enemy)) return;
+        
+        const dx = enemy.x - currentPos.x;
+        const dy = enemy.y - currentPos.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-
-        this.vx = (dx / distance) * 300;
-        this.vy = (dy / distance) * 300;
-
-        this.lifetime = 0;
-        this.maxLifetime = 5000;
-    }
-
-    update(deltaTime, enemies, explosions) {
-        this.x += this.vx * (deltaTime / 1000);
-        this.y += this.vy * (deltaTime / 1000);
-        this.lifetime += deltaTime;
-
-        let hitEnemies = [];
-        for (let enemy of enemies) {
-            const dx = enemy.x - this.x;
-            const dy = enemy.y - this.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < (this.radius + enemy.radius)) {
-                hitEnemies.push(enemy);
-            }
+        
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestEnemy = enemy;
         }
-
-        if (hitEnemies.length > 0) {
-            for (let i = 0; i < Math.min(this.chainCount, hitEnemies.length); i++) {
-                const enemy = hitEnemies[i];
-                console.log('Chain lightning hit enemy:', enemy);
-                enemy.takeDamage(this.damage);
-                explosions.push(new Explosion(enemy.x, enemy.y, 50, this.damage));
-            }
-            return true;
-        }
-
-        return this.lifetime > this.maxLifetime;
+      });
+      
+      if (nearestEnemy) {
+        this.lightningChain.push({
+          from: { x: currentPos.x, y: currentPos.y },
+          to: { x: nearestEnemy.x, y: nearestEnemy.y }
+        });
+        
+        nearestEnemy.takeDamage(this.damage);
+        this.hitEnemies.add(nearestEnemy);
+        currentPos = { x: nearestEnemy.x, y: nearestEnemy.y };
+      } else {
+        break;
+      }
     }
+  }
 
-    render(ctx, camera) {
-        const screenX = this.x - camera.x;
-        const screenY = this.y - camera.y;
+  update(deltaTime) {
+    this.timer += deltaTime;
+    return this.timer > this.duration;
+  }
 
-        ctx.save();
-        ctx.globalAlpha = 0.8;
-        ctx.strokeStyle = '#00ffff';
-        ctx.lineWidth = 3;
-
-        ctx.beginPath();
-        ctx.moveTo(screenX, screenY);
-
-        ctx.lineTo(screenX + this.vx * 0.1, screenY + this.vy * 0.1);
-
-        ctx.stroke();
-        ctx.restore();
-    }
+  render(ctx, camera) {
+    const alpha = Math.max(0, 1 - (this.timer / this.duration));
+    
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#00ffff';
+    ctx.shadowBlur = 10;
+    
+    this.lightningChain.forEach(chain => {
+      const fromX = chain.from.x - camera.x;
+      const fromY = chain.from.y - camera.y;
+      const toX = chain.to.x - camera.x;
+      const toY = chain.to.y - camera.y;
+      
+      const midX = (fromX + toX) / 2 + (Math.random() - 0.5) * 20;
+      const midY = (fromY + toY) / 2 + (Math.random() - 0.5) * 20;
+      
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.quadraticCurveTo(midX, midY, toX, toY);
+      ctx.stroke();
+    });
+    
+    ctx.restore();
+  }
 }
