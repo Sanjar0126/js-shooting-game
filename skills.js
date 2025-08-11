@@ -12,7 +12,7 @@ export const SKILL_CONFIG = {
     // fireRate: {
     //     name: 'Fire Rate',
     //     description: 'Reduce shooting cooldown.',
-    //     icon: '⚡',
+    //     icon: '⏱️',
     //     type: 'passive',
     //     maxLevel: 5,
     //     effect: (player, level) => {
@@ -91,32 +91,32 @@ export const SKILL_CONFIG = {
         },
     },
 
-    // iceSpike: {
-    //     name: 'Ice Spike',
-    //     description: 'Summons a spike of ice that damages and slows enemies.',
-    //     icon: '❄️',
-    //     type: 'active',
-    //     maxLevel: 5,
-    //     baseCooldown: 4000,
-    //     baseDamage: 50,
-    //     baseSlowDuration: 2000,
-    //     baseSlowAmount: 0.5,
-    //     effect: (player, level) => {
-    //         if (!player.skills.iceSpike) {
-    //             player.skills.iceSpike = {
-    //                 level: 0,
-    //                 cooldown: 0,
-    //                 damage: 50,
-    //                 slowDuration: 2000,
-    //                 slowAmount: 0.5,
-    //                 range: 300,
-    //             };
-    //         }
-    //         player.skills.iceSpike.level = level;
-    //         player.skills.iceSpike.damage = 50 + (level - 1) * 15;
-    //         player.skills.iceSpike.slowDuration = 2000 + (level - 1) * 500;
-    //     },
-    // },
+    iceSpike: {
+        name: 'Ice Spike',
+        description: 'Summons a spike of ice that damages and slows enemies.',
+        icon: '❄️',
+        type: 'active',
+        maxLevel: 5,
+        baseCooldown: 4000,
+        baseDamage: 50,
+        baseSlowDuration: 2000,
+        baseSlowAmount: 0.5,
+        effect: (player, level) => {
+            if (!player.skills.iceSpike) {
+                player.skills.iceSpike = {
+                    level: 0,
+                    cooldown: 0,
+                    damage: 50,
+                    slowDuration: 2000,
+                    slowAmount: 0.5,
+                    range: 300,
+                };
+            }
+            player.skills.iceSpike.level = level;
+            player.skills.iceSpike.damage = 50 + (level - 1) * 15;
+            player.skills.iceSpike.slowDuration = 2000 + (level - 1) * 500;
+        },
+    },
 
     // meteor: {
     //     name: 'Meteor Strike',
@@ -359,85 +359,147 @@ export class Fireball {
 }
 
 export class ChainLightning {
-  constructor(x, y, enemies, damage, chains, range) {
-    this.x = x;
-    this.y = y;
-    this.damage = damage;
-    this.chains = chains;
-    this.range = range;
-    this.hitEnemies = new Set();
-    this.lightningChain = [];
-    this.duration = 500;
-    this.timer = 0;
-    
-    this.createChain(enemies);
-  }
+    constructor(x, y, enemies, damage, chains, range) {
+        this.x = x;
+        this.y = y;
+        this.damage = damage;
+        this.chains = chains;
+        this.range = range;
+        this.hitEnemies = new Set();
+        this.lightningChain = [];
+        this.duration = 500;
+        this.timer = 0;
 
-  createChain(enemies) {
-    let currentPos = { x: this.x, y: this.y };
-    
-    for (let i = 0; i < this.chains && enemies.length > 0; i++) {
-      let nearestEnemy = null;
-      let nearestDistance = this.range;
-      
-      enemies.forEach(enemy => {
-        if (this.hitEnemies.has(enemy)) return;
-        
-        const dx = enemy.x - currentPos.x;
-        const dy = enemy.y - currentPos.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < nearestDistance) {
-          nearestDistance = distance;
-          nearestEnemy = enemy;
-        }
-      });
-      
-      if (nearestEnemy) {
-        this.lightningChain.push({
-          from: { x: currentPos.x, y: currentPos.y },
-          to: { x: nearestEnemy.x, y: nearestEnemy.y }
-        });
-        
-        nearestEnemy.takeDamage(this.damage);
-        this.hitEnemies.add(nearestEnemy);
-        currentPos = { x: nearestEnemy.x, y: nearestEnemy.y };
-      } else {
-        break;
-      }
+        this.createChain(enemies);
     }
-  }
 
-  update(deltaTime) {
-    this.timer += deltaTime;
-    return this.timer > this.duration;
-  }
+    createChain(enemies) {
+        let currentPos = { x: this.x, y: this.y };
 
-  render(ctx, camera) {
-    const alpha = Math.max(0, 1 - (this.timer / this.duration));
-    
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = '#00ffff';
-    ctx.lineWidth = 3;
-    ctx.shadowColor = '#00ffff';
-    ctx.shadowBlur = 10;
-    
-    this.lightningChain.forEach(chain => {
-      const fromX = chain.from.x - camera.x;
-      const fromY = chain.from.y - camera.y;
-      const toX = chain.to.x - camera.x;
-      const toY = chain.to.y - camera.y;
-      
-      const midX = (fromX + toX) / 2 + (Math.random() - 0.5) * 20;
-      const midY = (fromY + toY) / 2 + (Math.random() - 0.5) * 20;
-      
-      ctx.beginPath();
-      ctx.moveTo(fromX, fromY);
-      ctx.quadraticCurveTo(midX, midY, toX, toY);
-      ctx.stroke();
-    });
-    
-    ctx.restore();
-  }
+        for (let i = 0; i < this.chains && enemies.length > 0; i++) {
+            let nearestEnemy = null;
+            let nearestDistance = this.range;
+
+            enemies.forEach(enemy => {
+                if (this.hitEnemies.has(enemy)) return;
+
+                const dx = enemy.x - currentPos.x;
+                const dy = enemy.y - currentPos.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestEnemy = enemy;
+                }
+            });
+
+            if (nearestEnemy) {
+                this.lightningChain.push({
+                    from: { x: currentPos.x, y: currentPos.y },
+                    to: { x: nearestEnemy.x, y: nearestEnemy.y }
+                });
+
+                nearestEnemy.takeDamage(this.damage);
+                this.hitEnemies.add(nearestEnemy);
+                currentPos = { x: nearestEnemy.x, y: nearestEnemy.y };
+            } else {
+                break;
+            }
+        }
+    }
+
+    update(deltaTime) {
+        this.timer += deltaTime;
+        return this.timer > this.duration;
+    }
+
+    render(ctx, camera) {
+        const alpha = Math.max(0, 1 - (this.timer / this.duration));
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = '#00ffff';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#00ffff';
+        ctx.shadowBlur = 10;
+
+        this.lightningChain.forEach(chain => {
+            const fromX = chain.from.x - camera.x;
+            const fromY = chain.from.y - camera.y;
+            const toX = chain.to.x - camera.x;
+            const toY = chain.to.y - camera.y;
+
+            const midX = (fromX + toX) / 2 + (Math.random() - 0.5) * 20;
+            const midY = (fromY + toY) / 2 + (Math.random() - 0.5) * 20;
+
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.quadraticCurveTo(midX, midY, toX, toY);
+            ctx.stroke();
+        });
+
+        ctx.restore();
+    }
+}
+
+export class IceSpike {
+    constructor(x, y, targetX, targetY, damage, slowDuration, slowAmount) {
+        this.x = x;
+        this.y = y;
+        this.damage = damage;
+        this.slowDuration = slowDuration;
+        this.slowAmount = slowAmount;
+        this.speed = 300;
+        this.radius = 6;
+
+        const dx = targetX - x;
+        const dy = targetY - y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        this.vx = (dx / distance) * this.speed;
+        this.vy = (dy / distance) * this.speed;
+
+        this.lifetime = 0;
+        this.maxLifetime = 3000;
+        this.hitEnemies = new Set();
+    }
+
+    update(deltaTime, enemies) {
+        this.x += this.vx * (deltaTime / 1000);
+        this.y += this.vy * (deltaTime / 1000);
+        this.lifetime += deltaTime;
+
+        enemies.forEach(enemy => {
+            if (this.hitEnemies.has(enemy)) return;
+
+            const dx = enemy.x - this.x;
+            const dy = enemy.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < this.radius + enemy.radius) {
+                enemy.takeDamage(this.damage);
+                enemy.applySlow(this.slowAmount, this.slowDuration);
+                this.hitEnemies.add(enemy);
+            }
+        });
+
+        return this.lifetime > this.maxLifetime;
+    }
+
+    render(ctx, camera) {
+        const screenX = this.x - camera.x;
+        const screenY = this.y - camera.y;
+
+        ctx.save();
+        ctx.fillStyle = '#00ccff';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, this.radius * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
 }
