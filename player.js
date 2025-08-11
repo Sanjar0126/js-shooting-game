@@ -127,11 +127,16 @@ class Player {
                         300,
                     );
 
-                    meteor.warningTimer += i * 100; 
+                    meteor.warningTimer += i * 100;
 
                     skillProjectiles.push(meteor);
                 }
                 skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 500;
+                break;
+            case 'shield':
+                this.isShielded = true;
+                this.shieldTimer = skill.duration;
+                skill.cooldown = 8000 - (skill.level - 1) * 1000;
                 break;
         }
 

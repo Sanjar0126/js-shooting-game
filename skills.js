@@ -1,45 +1,45 @@
 export const SKILL_CONFIG = {
-    // damageBoost: {
-    //     name: 'Damage Boost',
-    //     description: 'Increases the damage dealt by the player.',
-    //     icon: '💥',
-    //     type: 'passive',
-    //     maxLevel: 5,
-    //     effect: (player, level) => {
-    //         player.damageMultiplier += 0.25;
-    //     },
-    // },
-    // fireRate: {
-    //     name: 'Fire Rate',
-    //     description: 'Reduce shooting cooldown.',
-    //     icon: '⏱️',
-    //     type: 'passive',
-    //     maxLevel: 5,
-    //     effect: (player, level) => {
-    //         player.shootCooldownMultiplier *= 0.8;
-    //     },
-    // },
-    // health: {
-    //     name: 'Health',
-    //     description: 'Increases the player\'s maximum health.',
-    //     icon: '❤️',
-    //     type: 'passive',
-    //     maxLevel: 5,
-    //     effect: (player, level) => {
-    //         player.maxHealth += 20;
-    //         player.health = Math.min(player.currentHealth + 20, player.maxHealth);
-    //     },
-    // },
-    // speed: {
-    //     name: 'Agility',
-    //     description: 'Increases the player\'s movement speed.',
-    //     icon: '👟',
-    //     type: 'passive',
-    //     maxLevel: 4,
-    //     effect: (player, level) => {
-    //         player.speedMultiplier += 0.2;
-    //     },
-    // },
+    damageBoost: {
+        name: 'Damage Boost',
+        description: 'Increases the damage dealt by the player.',
+        icon: '💥',
+        type: 'passive',
+        maxLevel: 5,
+        effect: (player, level) => {
+            player.damageMultiplier += 0.25;
+        },
+    },
+    fireRate: {
+        name: 'Fire Rate',
+        description: 'Reduce shooting cooldown.',
+        icon: '⏱️',
+        type: 'passive',
+        maxLevel: 5,
+        effect: (player, level) => {
+            player.shootCooldownMultiplier *= 0.8;
+        },
+    },
+    health: {
+        name: 'Health',
+        description: 'Increases the player\'s maximum health.',
+        icon: '❤️',
+        type: 'passive',
+        maxLevel: 5,
+        effect: (player, level) => {
+            player.maxHealth += 20;
+            player.health = Math.min(player.currentHealth + 20, player.maxHealth);
+        },
+    },
+    speed: {
+        name: 'Agility',
+        description: 'Increases the player\'s movement speed.',
+        icon: '👟',
+        type: 'passive',
+        maxLevel: 4,
+        effect: (player, level) => {
+            player.speedMultiplier += 0.2;
+        },
+    },
 
     fireball: {
         name: 'Fireball',
@@ -150,28 +150,28 @@ export const SKILL_CONFIG = {
         },
     },
 
-    // shield: {
-    //     name: 'Shield',
-    //     description: 'Grants a protective shield that absorbs damage.',
-    //     icon: '🛡️',
-    //     type: 'active',
-    //     maxLevel: 4,
-    //     baseCooldown: 8000,
-    //     baseDuration: 1000,
-    //     effect: (player, level) => {
-    //         if (!player.skills.shield) {
-    //             player.skills.shield = {
-    //                 level: 0,
-    //                 cooldown: 0,
-    //                 duration: 1000,
-    //                 active: false,
-    //                 timer: 0
-    //             };
-    //         }
-    //         player.skills.shield.level = level;
-    //         player.skills.shield.duration = 1000 + (level - 1) * 500;
-    //     },
-    // }
+    shield: {
+        name: 'Shield',
+        description: 'Grants a protective shield that absorbs damage.',
+        icon: '🛡️',
+        type: 'active',
+        maxLevel: 4,
+        baseCooldown: 8000,
+        baseDuration: 1000,
+        effect: (player, level) => {
+            if (!player.skills.shield) {
+                player.skills.shield = {
+                    level: 0,
+                    cooldown: 0,
+                    duration: 1000,
+                    active: false,
+                    timer: 0
+                };
+            }
+            player.skills.shield.level = level;
+            player.skills.shield.duration = 1000 + (level - 1) * 500;
+        },
+    }
 }
 
 export class SkillSystem {
