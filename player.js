@@ -97,6 +97,7 @@ class Player {
     useSkill(skillName, targets, enemies, skillProjectiles, explosions) {
         const skill = this.skills[skillName];
         if (!skill || skill.cooldown > 0) return false;
+        console.log(this.shootCooldownMultiplier)
 
         switch (skillName) {
             case 'magicMissile':

@@ -16,7 +16,7 @@ export const SKILL_CONFIG = {
         type: 'passive',
         maxLevel: 5,
         effect: (player, level) => {
-            player.shootCooldownMultiplier -= 0.9;
+            player.shootCooldownMultiplier -= 0.1;
         },
     },
     health: {
@@ -306,23 +306,199 @@ export class Explosion {
         ctx.globalAlpha = alpha;
 
         if (this.type === 'fire') {
-            ctx.fillStyle = '#ff4400';
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, this.currentRadius, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#ff8800';
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, this.currentRadius * 0.7, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#ffff00';
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, this.currentRadius * 0.4, 0, Math.PI * 2);
-            ctx.fill();
+            this.renderFireExplosion(ctx, screenX, screenY, alpha);
+        } else if (this.type === 'acidic') {
+            this.renderAcidicExplosion(ctx, screenX, screenY, alpha);
+        } else if (this.type === 'frost') {
+            this.renderFrostExplosion(ctx, screenX, screenY, alpha);
         }
 
         ctx.restore();
+    }
+
+    renderFireExplosion(ctx, screenX, screenY, alpha) {
+        const flameCount = 12;
+        const baseRadius = this.currentRadius;
+
+        ctx.shadowColor = '#ff2200';
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = '#ff2200';
+
+        ctx.beginPath();
+        for (let i = 0; i <= flameCount; i++) {
+            const angle = (i * 2 * Math.PI) / flameCount;
+            const flameVariation = 0.8 + Math.sin(angle * 3 + this.timer * 0.1) * 0.3;
+            const radius = baseRadius * flameVariation;
+            const x = screenX + Math.cos(angle) * radius;
+            const y = screenY + Math.sin(angle) * radius;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#ff6600';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, baseRadius * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = '#ffaa00';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, baseRadius * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = 5;
+        ctx.fillStyle = '#ffff88';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, baseRadius * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    renderAcidicExplosion(ctx, screenX, screenY, alpha) {
+
+        const bubbleCount = 16;
+        const baseRadius = this.currentRadius;
+
+
+        ctx.shadowColor = '#44ff00';
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = '#88ff00';
+
+        ctx.beginPath();
+        for (let i = 0; i <= bubbleCount; i++) {
+            const angle = (i * 2 * Math.PI) / bubbleCount;
+            const bubbleVariation = 0.6 + Math.sin(angle * 5 + this.timer * 0.15) * 0.4;
+            const radius = baseRadius * bubbleVariation;
+            const x = screenX + Math.cos(angle) * radius;
+            const y = screenY + Math.sin(angle) * radius;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.shadowBlur = 6;
+        for (let i = 0; i < 8; i++) {
+            const angle = (i * Math.PI) / 4;
+            const distance = baseRadius * (1.2 + Math.random() * 0.3);
+            const dropletX = screenX + Math.cos(angle) * distance;
+            const dropletY = screenY + Math.sin(angle) * distance;
+
+            ctx.fillStyle = '#66dd00';
+            ctx.beginPath();
+            ctx.arc(dropletX, dropletY, baseRadius * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.fillStyle = '#aaff44';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, baseRadius * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ccff88';
+        ctx.shadowBlur = 4;
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, baseRadius * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#eeffaa';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, baseRadius * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    renderFrostExplosion(ctx, screenX, screenY, alpha) {
+        const shardCount = 8;
+        const baseRadius = this.currentRadius;
+
+        ctx.shadowColor = '#00aadd';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#88ddff';
+        ctx.globalAlpha *= 0.8;
+
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, baseRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = '#44ccff';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 6;
+
+        for (let i = 0; i < shardCount; i++) {
+            const angle = (i * 2 * Math.PI) / shardCount;
+            const shardLength = baseRadius * (0.8 + Math.random() * 0.4);
+
+            ctx.beginPath();
+            ctx.moveTo(screenX, screenY);
+            ctx.lineTo(
+                screenX + Math.cos(angle) * shardLength,
+                screenY + Math.sin(angle) * shardLength
+            );
+            ctx.stroke();
+
+
+            const midX = screenX + Math.cos(angle) * shardLength * 0.6;
+            const midY = screenY + Math.sin(angle) * shardLength * 0.6;
+            const perpAngle1 = angle + Math.PI / 2;
+            const perpAngle2 = angle - Math.PI / 2;
+            const perpLength = baseRadius * 0.2;
+
+            ctx.beginPath();
+            ctx.moveTo(midX + Math.cos(perpAngle1) * perpLength,
+                midY + Math.sin(perpAngle1) * perpLength);
+            ctx.lineTo(midX + Math.cos(perpAngle2) * perpLength,
+                midY + Math.sin(perpAngle2) * perpLength);
+            ctx.stroke();
+        }
+
+
+        ctx.fillStyle = '#aaeeff';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, baseRadius * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+
+
+        const coreSpikes = 6;
+        ctx.fillStyle = '#ccf0ff';
+        ctx.strokeStyle = '#88ddff';
+        ctx.lineWidth = 1;
+
+        ctx.beginPath();
+        for (let i = 0; i < coreSpikes * 2; i++) {
+            const angle = (i * Math.PI) / coreSpikes;
+            const radius = i % 2 === 0 ? baseRadius * 0.4 : baseRadius * 0.2;
+            const x = screenX + Math.cos(angle) * radius;
+            const y = screenY + Math.sin(angle) * radius;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowBlur = 3;
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, baseRadius * 0.1, 0, Math.PI * 2);
+        ctx.fill();
     }
 }
 
@@ -693,6 +869,7 @@ export class IceSpike {
         this.slowAmount = slowAmount;
         this.speed = 300;
         this.radius = 6;
+        this.explosionRadius = 80;
 
         const dx = targetX - x;
         const dy = targetY - y;
@@ -703,29 +880,45 @@ export class IceSpike {
 
         this.lifetime = 0;
         this.maxLifetime = 3000;
-        this.hitEnemies = new Set();
+        this.isHit = false;
     }
 
-    update(deltaTime, enemies) {
+    update(deltaTime, enemies, explosions) {
+        if (this.isHit) return true;
+
         this.x += this.vx * (deltaTime / 1000);
         this.y += this.vy * (deltaTime / 1000);
         this.lifetime += deltaTime;
 
         enemies.forEach(enemy => {
-            if (this.hitEnemies.has(enemy)) return;
-
             const dx = enemy.x - this.x;
             const dy = enemy.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < this.radius + enemy.radius) {
-                enemy.takeDamage(this.damage);
-                enemy.applySlow(this.slowAmount, this.slowDuration);
-                this.hitEnemies.add(enemy);
+                this.hit(enemies, explosions);
+                return true;
             }
         });
 
         return this.lifetime > this.maxLifetime;
+    }
+
+    hit(enemies, explosions) {
+        this.isHit = true;
+        const explosion = new Explosion(this.x, this.y, this.explosionRadius, this.damage, 'frost');
+        explosions.push(explosion);
+
+        enemies.forEach(enemy => {
+            const dx = enemy.x - this.x;
+            const dy = enemy.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < this.explosionRadius) {
+                enemy.takeDamage(this.damage);
+                enemy.applySlow(this.slowAmount, this.slowDuration);
+            }
+        });
     }
 
     render(ctx, camera) {
