@@ -4,6 +4,7 @@ import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
 import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor } from './skills.js';
+import { DamageNumberSystem } from './damageNumbers.js';
 
 class Camera {
     constructor(width, height) {
@@ -89,6 +90,8 @@ class Game {
         this.showingSkillSelection = false;
         this.skillChoices = [];
 
+        this.damageNumbers = new DamageNumberSystem();
+
         this.init();
     }
 
@@ -159,6 +162,8 @@ class Game {
         this.skillProjectiles = [];
         this.explosions = [];
         this.showingSkillSelection = false;
+
+        this.damageNumbers.clear();
 
         document.getElementById('mainMenu').style.display = 'none';
         document.getElementById('ui').style.display = 'block';
@@ -334,6 +339,8 @@ class Game {
             }
         }
 
+        this.damageNumbers.update(deltaTime);
+
         this.handleSkillInput();
 
         this.checkCollisions();
@@ -467,6 +474,8 @@ class Game {
             this.deathAnimations.forEach(animation => animation.render(this.ctx, this.camera));
             this.skillProjectiles.forEach(projectile => projectile.render(this.ctx, this.camera));
             this.explosions.forEach(explosion => explosion.render(this.ctx, this.camera));
+
+            this.damageNumbers.render(this.ctx, this.camera);
             this.renderSkillUI();
             this.drawWorldBounds();
 

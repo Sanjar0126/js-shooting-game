@@ -53,7 +53,7 @@ class Player {
         if (this.healthRegen > 0) {
             this.regenTimer += deltaTime;
             if (this.regenTimer >= 1000) {
-                this.health = Math.min(this.maxHealth, this.health + this.healthRegen);
+                this.heal(this.healthRegen);
                 this.regenTimer = 0;
             }
         }
@@ -190,8 +190,31 @@ class Player {
         this.lastShot = 0;
     }
 
+    heal(amount) {
+        const actualHeal = Math.min(amount, this.maxHealth - this.health);
+        this.health += actualHeal;
+
+        if (window.game && window.game.damageNumbers && actualHeal > 0) {
+            window.game.damageNumbers.addDamageNumber(
+                this.x,
+                this.y - 20,
+                actualHeal,
+                'heal'
+            );
+        }
+    }
+
     takeDamage(damage) {
         if (this.isDead) return;
+
+        if (window.game && window.game.damageNumbers) {
+            window.game.damageNumbers.addDamageNumber(
+                this.x + (Math.random() - 0.5) * 20,
+                this.y - 15,
+                damage,
+                'critical'
+            );
+        }
 
         this.health -= damage;
         if (this.health <= 0) {

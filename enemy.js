@@ -155,6 +155,15 @@ class Enemy {
     takeDamage(damage) {
         this.health -= damage;
 
+        if (window.game && window.game.damageNumbers) {
+            window.game.damageNumbers.addDamageNumber(
+                this.x + (Math.random() - 0.5) * 20, 
+                this.y - 10,
+                damage,
+                'normal'
+            );
+        }
+
         if (this.type === ExploderEnemy && this.health <= 0 && !this.isExploding) {
             this.health = 1;
 

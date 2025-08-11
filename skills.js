@@ -26,6 +26,7 @@ export const SKILL_CONFIG = {
         type: 'passive',
         maxLevel: 5,
         effect: (player, level) => {
+            console.log(player)
             player.maxHealth += 20;
             player.health = Math.min(player.currentHealth + 20, player.maxHealth);
         },
@@ -38,7 +39,7 @@ export const SKILL_CONFIG = {
         maxLevel: 4,
         effect: (player, level) => {
             player.healthRegen += 0.5;
-            player.regenTimer = 1000; 
+            player.regenTimer = 1000;
         },
     },
     speed: {
@@ -344,6 +345,15 @@ export class Fireball {
 
             if (distance < this.explosionRadius) {
                 enemy.takeDamage(this.damage);
+
+                if (window.game && window.game.damageNumbers) {
+                    window.game.damageNumbers.addDamageNumber(
+                        enemy.x + (Math.random() - 0.5) * 30,
+                        enemy.y - 15,
+                        this.damage,
+                        'explosion'
+                    );
+                }
             }
         });
     }
