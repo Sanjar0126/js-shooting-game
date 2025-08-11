@@ -222,6 +222,19 @@ class Game {
         document.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
 
+            if (this.showingSkillSelection) {
+                if (e.code === 'Digit1' || e.code === 'Numpad1') {
+                    this.selectSkillByIndex(0);
+                    e.preventDefault();
+                } else if (e.code === 'Digit2' || e.code === 'Numpad2') {
+                    this.selectSkillByIndex(1);
+                    e.preventDefault();
+                } else if (e.code === 'Digit3' || e.code === 'Numpad3') {
+                    this.selectSkillByIndex(2);
+                    e.preventDefault();
+                }
+            }
+
             if (e.code === 'Escape') {
                 if (this.gameState === 'playing') {
                     this.pauseGame();
@@ -783,7 +796,7 @@ class Game {
             button.className = 'skill-choice';
             button.innerHTML = `
                 <div class="skill-icon">${skill.icon}</div>
-                <div class="skill-name">${skill.name}</div>
+                <div class="skill-name">${index + 1}. ${skill.name}</div>
                 <div class="skill-level">Level ${currentLevel + 1}/${skill.maxLevel}</div>
                 <div class="skill-type">${skill.type.toUpperCase()}</div>
                 <div class="skill-description">${skill.description}</div>`;
@@ -798,8 +811,12 @@ class Game {
             this.showingSkillSelection = false;
             this.isRunning = true;
             document.getElementById('skillSelection').style.display = 'none';
+        }
+    }
 
-            // console.log(`Selected skill: ${skillId}`);
+    selectSkillByIndex(index) {
+        if (this.skillChoices && this.skillChoices[index]) {
+            this.selectSkill(this.skillChoices[index]);
         }
     }
 
