@@ -2,7 +2,7 @@ export const SKILL_CONFIG = {
     damageBoost: {
         name: 'Damage Boost',
         description: 'Increases the damage dealt by the player.',
-        icon: '💥',
+        icon: '💪',
         type: 'passive',
         maxLevel: 5,
         effect: (player, level) => {
@@ -16,7 +16,7 @@ export const SKILL_CONFIG = {
         type: 'passive',
         maxLevel: 5,
         effect: (player, level) => {
-            player.shootCooldownMultiplier *= 0.8;
+            player.shootCooldownMultiplier -= 0.9;
         },
     },
     health: {
@@ -39,6 +39,16 @@ export const SKILL_CONFIG = {
         effect: (player, level) => {
             player.healthRegen += 0.5;
             player.regenTimer = 1000;
+        },
+    },
+    damageReduction: {
+        name: 'Damage Reduction',
+        description: 'Reduces incoming damage.',
+        icon: '🛡️',
+        type: 'passive',
+        maxLevel: 5,
+        effect: (player, level) => {
+            player.damageReduction -= 0.9;
         },
     },
     speed: {
@@ -164,7 +174,7 @@ export const SKILL_CONFIG = {
     shield: {
         name: 'Shield',
         description: 'Grants a protective shield that absorbs damage.',
-        icon: '🛡️',
+        icon: '🛡',
         type: 'active',
         maxLevel: 4,
         baseCooldown: 8000,

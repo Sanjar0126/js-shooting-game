@@ -147,7 +147,7 @@ class Enemy {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance <= this.explosionRadius) {
-                player.takeDamage(this.damage);
+                player.takeDamage(this.damage*player.damageReduction);
             }
         }
     }

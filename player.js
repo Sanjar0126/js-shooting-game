@@ -20,6 +20,7 @@ class Player {
         this.damageMultiplier = 1.0;
         this.shootCooldownMultiplier = 1.0;
         this.bulletSpeedMultiplier = 1.0;
+        this.damageReduction = 1.0;
 
         this.skills = {};
 

@@ -662,7 +662,7 @@ class Game {
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             for (let j = this.enemies.length - 1; j >= 0; j--) {
                 if (this.isColliding(this.bullets[i], this.enemies[j])) {
-                    this.enemies[j].takeDamage(this.bullets[i].damage*this.player.damageMultiplier);
+                    this.enemies[j].takeDamage(this.bullets[i].damage * this.player.damageMultiplier);
                     this.bullets.splice(i, 1);
                     break;
                 }
@@ -671,7 +671,7 @@ class Game {
 
         this.enemies.forEach(enemy => {
             if (this.isColliding(this.player, enemy)) {
-                this.player.takeDamage(enemy.damage);
+                this.player.takeDamage(enemy.damage * this.player.damageReduction);
                 if (enemy.type !== 'exploder') {
                     enemy.health = 0;
                 }
@@ -680,7 +680,7 @@ class Game {
 
         for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
             if (this.isColliding(this.player, this.enemyBullets[i])) {
-                this.player.takeDamage(this.enemyBullets[i].damage);
+                this.player.takeDamage(this.enemyBullets[i].damage * this.player.damageReduction);
                 this.enemyBullets.splice(i, 1);
             }
         }
