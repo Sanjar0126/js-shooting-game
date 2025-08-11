@@ -26,9 +26,8 @@ export const SKILL_CONFIG = {
         type: 'passive',
         maxLevel: 5,
         effect: (player, level) => {
-            console.log(player)
             player.maxHealth += 20;
-            player.health = Math.min(player.currentHealth + 20, player.maxHealth);
+            player.health = Math.min(player.health + 20, player.maxHealth);
         },
     },
     regen: {

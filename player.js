@@ -94,25 +94,25 @@ class Player {
             case 'fireball':
                 const fireball = new window.Fireball(
                     this.x, this.y, targets[0].x, targets[0].y,
-                    skill.damage, skill.radius
+                    skill.damage * this.damageMultiplier, skill.radius
                 );
                 skillProjectiles.push(fireball);
-                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200;
+                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200 * this.shootCooldownMultiplier;
                 break;
             case 'chainLightning':
                 skillProjectiles.push(new window.ChainLightning(
                     this.x, this.y, enemies,
-                    skill.damage, skill.chains, skill.range
+                    skill.damage * this.damageMultiplier, skill.chains, skill.range
                 ));
-                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 300;
+                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 300 * this.shootCooldownMultiplier;
                 break;
 
             case 'iceSpike':
                 skillProjectiles.push(new window.IceSpike(
                     this.x, this.y, targets[0].x, targets[0].y,
-                    skill.damage, skill.slowDuration, skill.slowAmount
+                    skill.damage * this.damageMultiplier, skill.slowDuration, skill.slowAmount
                 ));
-                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200;
+                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200 * this.shootCooldownMultiplier;
                 break;
 
             case 'meteor':
@@ -122,7 +122,7 @@ class Player {
                     const meteor = new window.Meteor(
                         targets[i % targets.length].x + offsetX,
                         targets[i % targets.length].y + offsetY,
-                        skill.damage,
+                        skill.damage * this.damageMultiplier,
                         skill.radius,
                         300,
                     );
@@ -131,7 +131,7 @@ class Player {
 
                     skillProjectiles.push(meteor);
                 }
-                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 500;
+                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 500 * this.shootCooldownMultiplier;
                 break;
             case 'shield':
                 this.isShielded = true;
