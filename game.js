@@ -3,7 +3,7 @@ import { Enemy } from './enemy.js';
 import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
-import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike } from './skills.js';
+import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor} from './skills.js';
 
 class Camera {
     constructor(width, height) {
@@ -371,8 +371,6 @@ class Game {
             const range = 400;
             let nearestEnemy = this.findNearestEnemy(range);
 
-            // console.log(skill);
-
             if (nearestEnemy) {
                 this.player.useSkill(
                     skillName,
@@ -735,6 +733,7 @@ window.SKILL_CONFIG = SKILL_CONFIG;
 window.Fireball = Fireball;
 window.Explosion = Explosion;
 window.ChainLightning = ChainLightning;
-window.IceSpike = IceSpike
+window.IceSpike = IceSpike;
+window.Meteor = Meteor;
 
 export { Game };

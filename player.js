@@ -116,6 +116,18 @@ class Player {
                 ));
                 skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200;
                 break;
+
+            case 'meteor':
+                for (let i = 0; i < skill.count; i++) {
+                    const offsetX = (Math.random() - 0.5) * 100;
+                    const offsetY = (Math.random() - 0.5) * 100;
+                    skillProjectiles.push(new window.Meteor(
+                        targetX + offsetX, targetY + offsetY,
+                        skill.damage, skill.radius
+                    ));
+                }
+                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 500;
+                break;
         }
 
         return true;
