@@ -3,7 +3,7 @@ import { Enemy } from './enemy.js';
 import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
-import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor } from './skills.js';
+import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor, MagicMissile } from './skills.js';
 import { DamageNumberSystem } from './damageNumbers.js';
 
 class Camera {
@@ -150,6 +150,14 @@ class Game {
         this.totalXP = 0;
 
         this.player = new Player(this.worldWidth / 2, this.worldHeight / 2);
+        if (!this.player.skills.magicMissile) {
+            this.player.skills.magicMissile = {
+                level: 1,
+                cooldown: 0,
+                damage: 20,
+                speed: 400,
+            };
+        }
 
         this.enemySpawnTimer = 0;
         this.waveTimer = 0;
@@ -359,12 +367,6 @@ class Game {
 
     handleSkillInput() {
         this.autoUseSkills();
-
-        // if (this.mouse.rightPressed) {
-        //     const worldX = this.mouse.x + this.camera.x;
-        //     const worldY = this.mouse.y + this.camera.y;
-        //     this.manualUseSkill(worldX, worldY);
-        // }
     }
 
     autoUseSkills() {
@@ -375,7 +377,7 @@ class Game {
             const skill = this.player.skills[skillName];
             if (!skill || skill.cooldown > 0) return;
 
-            const range = 400;
+            const range = SKILL_CONFIG[skillName].baseRange || 400;
             let targets = [];
 
             let aimNearest = SKILL_CONFIG[skillName].aimNearestEnemy || false;
@@ -388,9 +390,10 @@ class Game {
 
             if (aimNearest) {
                 let nearestEnemy = this.findNearestEnemy(range);
+                if (!nearestEnemy) return;
                 targets.push({
-                    x: nearestEnemy.x,
-                    y: nearestEnemy.y
+                    x: nearestEnemy.x || 0,
+                    y: nearestEnemy.y || 0
                 });
             } else {
                 let randomEnemies = this.findRandomEnemy(range * 1.2, count);
@@ -801,5 +804,6 @@ window.Explosion = Explosion;
 window.ChainLightning = ChainLightning;
 window.IceSpike = IceSpike;
 window.Meteor = Meteor;
+window.MagicMissile = MagicMissile;
 
 export { Game };

@@ -10,8 +10,8 @@ export const SKILL_CONFIG = {
         },
     },
     fireRate: {
-        name: 'Fire Rate',
-        description: 'Reduce shooting cooldown.',
+        name: 'Reduce cooldown',
+        description: 'Reduce cooldown.',
         icon: '⏱️',
         type: 'passive',
         maxLevel: 5,
@@ -62,6 +62,29 @@ export const SKILL_CONFIG = {
         },
     },
 
+    magicMissile: {
+        name: 'Magic Missile',
+        description: 'Fires a magic missile that deals damage to enemies.',
+        icon: '✨',
+        type: 'active',
+        maxLevel: 5,
+        baseCooldown: 400,
+        baseDamage: 20,
+        aimNearestEnemy: true,
+        baseRange: 800,
+        effect: (player, level) => {
+            if (!player.skills.magicMissile) {
+                player.skills.magicMissile = {
+                    level: 0,
+                    cooldown: 0,
+                    damage: 20,
+                    speed: 400
+                };
+            }
+            player.skills.magicMissile.level = level;
+            player.skills.magicMissile.damage = 20 + (level - 1) * 5;
+        },
+    },
     fireball: {
         name: 'Fireball',
         description: 'Launches explosive fireball.',
@@ -294,6 +317,113 @@ export class Explosion {
             ctx.arc(screenX, screenY, this.currentRadius * 0.4, 0, Math.PI * 2);
             ctx.fill();
         }
+
+        ctx.restore();
+    }
+}
+
+export class MagicMissile {
+    constructor(x, y, targetX, targetY, damage, speed) {
+        this.x = x;
+        this.y = y;
+        this.damage = damage;
+        this.speed = speed;
+        this.radius = 4;
+
+        const dx = targetX - x;
+        const dy = targetY - y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 0) {
+            this.vx = (dx / distance) * this.speed;
+            this.vy = (dy / distance) * this.speed;
+        } else {
+            this.vx = 0;
+            this.vy = 0;
+        }
+
+        this.lifetime = 0;
+        this.maxLifetime = 3000;
+        this.hitEnemies = new Set();
+
+        this.trail = [];
+        this.maxTrailLength = 8;
+    }
+
+    update(deltaTime, enemies) {
+        this.x += this.vx * (deltaTime / 1000);
+        this.y += this.vy * (deltaTime / 1000);
+        this.lifetime += deltaTime;
+
+        this.trail.push({ x: this.x, y: this.y, time: this.lifetime });
+        if (this.trail.length > this.maxTrailLength) {
+            this.trail.shift();
+        }
+
+        enemies.forEach(enemy => {
+            if (this.hitEnemies.has(enemy)) return;
+
+            const dx = enemy.x - this.x;
+            const dy = enemy.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < this.radius + enemy.radius) {
+                enemy.takeDamage(this.damage);
+
+                if (window.game && window.game.damageNumbers) {
+                    window.game.damageNumbers.addDamageNumber(
+                        enemy.x + (Math.random() - 0.5) * 20,
+                        enemy.y - 10,
+                        this.damage,
+                        'skill'
+                    );
+                }
+
+                this.hitEnemies.add(enemy);
+                return true; 
+            }
+        });
+
+        return this.lifetime > this.maxLifetime;
+    }
+
+    render(ctx, camera) {
+        const screenX = this.x - camera.x;
+        const screenY = this.y - camera.y;
+
+        ctx.save();
+        this.trail.forEach((point, index) => {
+            const trailScreenX = point.x - camera.x;
+            const trailScreenY = point.y - camera.y;
+            const alpha = (index / this.trail.length) * 0.5;
+            const size = (index / this.trail.length) * this.radius;
+
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = '#8844ff';
+            ctx.beginPath();
+            ctx.arc(trailScreenX, trailScreenY, size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.restore();
+
+        ctx.save();
+
+        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = '#aa66ff';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, this.radius * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = 1.0;
+        ctx.fillStyle = '#cc88ff';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, this.radius * 0.4, 0, Math.PI * 2);
+        ctx.fill();
 
         ctx.restore();
     }

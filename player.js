@@ -22,7 +22,14 @@ class Player {
         this.bulletSpeedMultiplier = 1.0;
         this.damageReduction = 1.0;
 
-        this.skills = {};
+        this.skills = {
+            magicMissile: {
+                level: 1,
+                cooldown: 0,
+                damage: 20,
+                speed: 400
+            }
+        };
 
         this.lastShot = 0;
         this.isDead = false;
@@ -75,8 +82,8 @@ class Player {
             }
         }
 
-        this.lastShot += deltaTime;
-        this.autoShoot(enemies, bullets, camera, deltaTime);
+        // this.lastShot += deltaTime;
+        // this.autoShoot(enemies, bullets, camera, deltaTime);
     }
 
     updateSkillCooldowns(deltaTime) {
@@ -92,20 +99,27 @@ class Player {
         if (!skill || skill.cooldown > 0) return false;
 
         switch (skillName) {
+            case 'magicMissile':
+                skillProjectiles.push(new window.MagicMissile(
+                    this.x, this.y, targets[0].x, targets[0].y,
+                    skill.damage * this.damageMultiplier, skill.speed * this.bulletSpeedMultiplier
+                ));
+                skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 40) * this.shootCooldownMultiplier;
+                break;
             case 'fireball':
                 const fireball = new window.Fireball(
                     this.x, this.y, targets[0].x, targets[0].y,
                     skill.damage * this.damageMultiplier, skill.radius
                 );
                 skillProjectiles.push(fireball);
-                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200 * this.shootCooldownMultiplier;
+                skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200) * this.shootCooldownMultiplier;
                 break;
             case 'chainLightning':
                 skillProjectiles.push(new window.ChainLightning(
                     this.x, this.y, enemies,
                     skill.damage * this.damageMultiplier, skill.chains, skill.range
                 ));
-                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 300 * this.shootCooldownMultiplier;
+                skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 300) * this.shootCooldownMultiplier;
                 break;
 
             case 'iceSpike':
@@ -113,7 +127,7 @@ class Player {
                     this.x, this.y, targets[0].x, targets[0].y,
                     skill.damage * this.damageMultiplier, skill.slowDuration, skill.slowAmount
                 ));
-                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200 * this.shootCooldownMultiplier;
+                skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200) * this.shootCooldownMultiplier;
                 break;
 
             case 'meteor':
@@ -132,7 +146,7 @@ class Player {
 
                     skillProjectiles.push(meteor);
                 }
-                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 500 * this.shootCooldownMultiplier;
+                skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 500) * this.shootCooldownMultiplier;
                 break;
             case 'shield':
                 this.isShielded = true;
