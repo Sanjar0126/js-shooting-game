@@ -5,6 +5,7 @@ import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
 import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor, MagicMissile } from './skills.js';
 import { DamageNumberSystem } from './damageNumbers.js';
+import { findNearestEnemy } from './utils.js';
 
 class Camera {
     constructor(width, height) {
@@ -33,6 +34,50 @@ class Camera {
     }
 }
 
+class SpatialGrid {
+    constructor(worldHeight, worldWidth, cellSize = 200) {
+        this.cellSize = cellSize;
+        this.cols = Math.ceil(worldWidth / cellSize);
+        this.rows = Math.ceil(worldHeight / cellSize);
+        this.grid = new Array(this.cols * this.rows).fill(null).map(() => []);
+    }
+
+    clear() {
+        this.grid.forEach(cell => cell.length = 0);
+    }
+
+    getGridIndex(x, y) {
+        const col = Math.floor(x / this.cellSize);
+        const row = Math.floor(y / this.cellSize);
+        return row * this.cols + col;
+    }
+
+    addObject(object) {
+        const index = this.getGridIndex(object.x, object.y);
+        if (index >= 0 && index < this.grid.length) {
+            this.grid[index].push(object);
+        }
+    }
+
+    getObjectsInRange(x, y, range) {
+        const cellRange = Math.ceil(range / this.cellSize);
+        const centerCol = Math.floor(x / this.cellSize);
+        const centerRow = Math.floor(y / this.cellSize);
+        const objects = [];
+
+        for (let row = centerRow - cellRange; row <= centerRow + cellRange; row++) {
+            for (let col = centerCol - cellRange; col <= centerCol + cellRange; col++) {
+                if (row >= 0 && row < this.rows && col >= 0 && col < this.cols) {
+                    const index = row * this.cols + col;
+                    objects.push(...this.grid[index]);
+                }
+            }
+        }
+
+        return objects;
+    }
+}
+
 class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
@@ -46,8 +91,10 @@ class Game {
 
         this.enemyBullets = [];
 
-        this.worldWidth = 3000;
-        this.worldHeight = 3000;
+        this.worldWidth = 6400;
+        this.worldHeight = 6400;
+
+        this.spatialGrid = new SpatialGrid(this.worldHeight, this.worldWidth, 200);
 
         this.camera = new Camera(this.width, this.height);
         this.deathAnimations = [];
@@ -259,6 +306,11 @@ class Game {
             y: this.mouse.y + this.camera.y
         };
 
+        this.spatialGrid.clear();
+        this.enemies.forEach(enemy => {
+            this.spatialGrid.addObject(enemy);
+        });
+
         this.player.update(deltaTime, this.keys, mouseWorldPos, this.enemies, this.bullets, this.camera);
         this.camera.update(this.player);
 
@@ -296,7 +348,7 @@ class Game {
         }
 
         this.enemySpawnTimer += deltaTime;
-        if (this.enemySpawnTimer > 500) {
+        if (this.enemySpawnTimer > Math.max(1000 - this.wave * 50, 200)) {
             this.spawnEnemy();
             this.enemySpawnTimer = 0;
             this.enemyCount++;
@@ -356,7 +408,7 @@ class Game {
             }
 
             if (aimNearest) {
-                let nearestEnemy = this.findNearestEnemy(range);
+                let nearestEnemy = findNearestEnemy(range, this.player.x, this.player.y);
                 if (!nearestEnemy) return;
                 targets.push({
                     x: nearestEnemy.x || 0,
@@ -386,22 +438,26 @@ class Game {
         });
     }
 
-    findNearestEnemy(maxRange = Infinity) {
-        let nearestEnemy = null;
-        let nearestDistance = maxRange;
+    drawLineToNearestEnemy() {
+        const nearestEnemy = findNearestEnemy(1000, this.player.x, this.player.y);
+        if (!nearestEnemy) return;
 
-        this.enemies.forEach(enemy => {
-            const dx = enemy.x - this.player.x;
-            const dy = enemy.y - this.player.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+        const playerScreenX = this.player.x - this.camera.x;
+        const playerScreenY = this.player.y - this.camera.y;
+        const enemyScreenX = nearestEnemy.x - this.camera.x;
+        const enemyScreenY = nearestEnemy.y - this.camera.y;
 
-            if (distance < nearestDistance) {
-                nearestDistance = distance;
-                nearestEnemy = enemy;
-            }
-        });
+        this.ctx.save();
+        this.ctx.strokeStyle = '#ffff00';
+        this.ctx.lineWidth = 2;
+        this.ctx.globalAlpha = 0.7;
 
-        return nearestEnemy;
+        this.ctx.beginPath();
+        this.ctx.moveTo(playerScreenX, playerScreenY);
+        this.ctx.lineTo(enemyScreenX, enemyScreenY);
+        this.ctx.stroke();
+
+        this.ctx.restore();
     }
 
     findRandomEnemy(maxRange = Infinity, count = 1) {
@@ -448,6 +504,8 @@ class Game {
             this.damageNumbers.render(this.ctx, this.camera);
             this.renderSkillUI();
             this.drawWorldBounds();
+
+            this.drawLineToNearestEnemy();
 
             if (this.showingSkillSelection) {
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
