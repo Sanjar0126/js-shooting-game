@@ -119,10 +119,17 @@ class Player {
                 for (let i = 0; i < skill.count; i++) {
                     const offsetX = (Math.random() - 0.5) * 60;
                     const offsetY = (Math.random() - 0.5) * 60;
-                    skillProjectiles.push(new window.Meteor(
-                        targets[i].x + offsetX, targets[i].y + offsetY,
-                        skill.damage, skill.radius
-                    ));
+                    const meteor = new window.Meteor(
+                        targets[i % targets.length].x + offsetX,
+                        targets[i % targets.length].y + offsetY,
+                        skill.damage,
+                        skill.radius,
+                        300,
+                    );
+
+                    meteor.warningTimer += i * 100; 
+
+                    skillProjectiles.push(meteor);
                 }
                 skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 500;
                 break;

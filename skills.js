@@ -510,97 +510,97 @@ export class IceSpike {
 }
 
 
-	export class Meteor {
-	  constructor(targetX, targetY, damage, radius) {
-	    this.targetX = targetX;
-	    this.targetY = targetY;
-	    this.x = targetX + (Math.random() - 0.5) * 200;
-	    this.y = targetY - 400;
-	    this.damage = damage;
-	    this.explosionRadius = radius;
-	    this.speed = 400;
-	    this.radius = 12;
-	    this.warningTimer = 500; 
-	    this.impacted = false;
-	    
-	    const dx = this.targetX - this.x;
-	    const dy = this.targetY - this.y;
-	    const distance = Math.sqrt(dx * dx + dy * dy);
-	    
-	    this.vx = (dx / distance) * this.speed;
-	    this.vy = (dy / distance) * this.speed;
-	  }
-	
-	  update(deltaTime, enemies, explosions) {
-	    if (this.warningTimer > 0) {
-	      this.warningTimer -= deltaTime;
-	      return false;
-	    }
-	    
-	    if (this.impacted) return true;
-	    
-	    this.x += this.vx * (deltaTime / 1000);
-	    this.y += this.vy * (deltaTime / 1000);
-	    
-	    const dx = this.targetX - this.x;
-	    const dy = this.targetY - this.y;
-	    const distance = Math.sqrt(dx * dx + dy * dy);
-	    
-	    if (distance < 20) {
-	      this.impact(enemies, explosions);
-	      return true;
-	    }
-	    
-	    return false;
-	  }
-	
-	  impact(enemies, explosions) {
-	    this.impacted = true;
-	    explosions.push(new Explosion(this.targetX, this.targetY, this.explosionRadius, this.damage, 'fire'));
-	    
-	    enemies.forEach(enemy => {
-	      const dx = enemy.x - this.targetX;
-	      const dy = enemy.y - this.targetY;
-	      const distance = Math.sqrt(dx * dx + dy * dy);
-	      
-	      if (distance <= this.explosionRadius) {
-	        enemy.takeDamage(this.damage);
-	      }
-	    });
-	  }
-	
-	  render(ctx, camera) {
-	    if (this.warningTimer > 0) {
-	      const screenX = this.targetX - camera.x;
-	      const screenY = this.targetY - camera.y;
-	      const alpha = (Math.sin(this.warningTimer * 0.01) + 1) / 2;
-	      
-	      ctx.save();
-	      ctx.globalAlpha = alpha;
-	      ctx.strokeStyle = '#ff0000';
-	      ctx.lineWidth = 3;
-	      ctx.beginPath();
-	      ctx.arc(screenX, screenY, this.explosionRadius, 0, Math.PI * 2);
-	      ctx.stroke();
-	      ctx.restore();
-	      return;
-	    }
-	    
-	    if (this.impacted) return;
-	    
-	    const screenX = this.x - camera.x;
-	    const screenY = this.y - camera.y;
-	    
-	    ctx.save();
-	    ctx.fillStyle = '#ff4400';
-	    ctx.beginPath();
-	    ctx.arc(screenX - this.vx * 0.05, screenY - this.vy * 0.05, this.radius * 1.5, 0, Math.PI * 2);
-	    ctx.fill();
-	    
-	    ctx.fillStyle = '#ff8800';
-	    ctx.beginPath();
-	    ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
-	    ctx.fill();
-	    ctx.restore();
-	  }
-	}
+export class Meteor {
+    constructor(targetX, targetY, damage, radius, warningTime = 200) {
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.x = targetX + (Math.random() - 0.5) * 200;
+        this.y = targetY - 400;
+        this.damage = damage;
+        this.explosionRadius = radius;
+        this.speed = 400;
+        this.radius = 12;
+        this.warningTimer = warningTime;
+        this.impacted = false;
+
+        const dx = this.targetX - this.x;
+        const dy = this.targetY - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        this.vx = (dx / distance) * this.speed;
+        this.vy = (dy / distance) * this.speed;
+    }
+
+    update(deltaTime, enemies, explosions) {
+        if (this.warningTimer > 0) {
+            this.warningTimer -= deltaTime;
+            return false;
+        }
+
+        if (this.impacted) return true;
+
+        this.x += this.vx * (deltaTime / 1000);
+        this.y += this.vy * (deltaTime / 1000);
+
+        const dx = this.targetX - this.x;
+        const dy = this.targetY - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 20) {
+            this.impact(enemies, explosions);
+            return true;
+        }
+
+        return false;
+    }
+
+    impact(enemies, explosions) {
+        this.impacted = true;
+        explosions.push(new Explosion(this.targetX, this.targetY, this.explosionRadius, this.damage, 'fire'));
+
+        enemies.forEach(enemy => {
+            const dx = enemy.x - this.targetX;
+            const dy = enemy.y - this.targetY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance <= this.explosionRadius) {
+                enemy.takeDamage(this.damage);
+            }
+        });
+    }
+
+    render(ctx, camera) {
+        if (this.warningTimer > 0) {
+            const screenX = this.targetX - camera.x;
+            const screenY = this.targetY - camera.y;
+            const alpha = (Math.sin(this.warningTimer * 0.01) + 1) / 2;
+
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, this.explosionRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+            return;
+        }
+
+        if (this.impacted) return;
+
+        const screenX = this.x - camera.x;
+        const screenY = this.y - camera.y;
+
+        ctx.save();
+        ctx.fillStyle = '#ff4400';
+        ctx.beginPath();
+        ctx.arc(screenX - this.vx * 0.05, screenY - this.vy * 0.05, this.radius * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ff8800';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
