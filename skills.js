@@ -377,7 +377,7 @@ export class MagicMissile {
 
                 this.isHit = true;
 
-                return true; 
+                return true;
             }
         });
 
@@ -481,15 +481,6 @@ export class Fireball {
 
             if (distance < this.explosionRadius) {
                 enemy.takeDamage(this.damage);
-
-                if (window.game && window.game.damageNumbers) {
-                    window.game.damageNumbers.addDamageNumber(
-                        enemy.x + (Math.random() - 0.5) * 30,
-                        enemy.y - 15,
-                        this.damage,
-                        'explosion'
-                    );
-                }
             }
         });
     }
@@ -591,16 +582,105 @@ export class ChainLightning {
             const toX = chain.to.x - camera.x;
             const toY = chain.to.y - camera.y;
 
-            const midX = (fromX + toX) / 2 + (Math.random() - 0.5) * 20;
-            const midY = (fromY + toY) / 2 + (Math.random() - 0.5) * 20;
+            this.drawLightningBolt(ctx, fromX, fromY, toX, toY);
 
-            ctx.beginPath();
-            ctx.moveTo(fromX, fromY);
-            ctx.quadraticCurveTo(midX, midY, toX, toY);
-            ctx.stroke();
+            if (Math.random() < 0.3) { 
+                this.drawLightningBranches(ctx, fromX, fromY, toX, toY);
+            }
         });
 
         ctx.restore();
+    }
+
+    drawLightningBolt(ctx, fromX, fromY, toX, toY) {
+        const segments = 8; 
+        const displacement = 15; 
+
+        let points = [{ x: fromX, y: fromY }];
+
+        for (let i = 1; i < segments; i++) {
+            const t = i / segments;
+            const baseX = fromX + (toX - fromX) * t;
+            const baseY = fromY + (toY - fromY) * t;
+
+            const angle = Math.atan2(toY - fromY, toX - fromX) + Math.PI / 2;
+            const disp = (Math.random() - 0.5) * displacement * (1 - Math.abs(t - 0.5) * 2);
+
+            points.push({
+                x: baseX + Math.cos(angle) * disp,
+                y: baseY + Math.sin(angle) * disp
+            });
+        }
+
+        points.push({ x: toX, y: toY });
+
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.stroke();
+
+        ctx.save();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.shadowBlur = 5;
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    drawLightningBranches(ctx, fromX, fromY, toX, toY) {
+        const numBranches = Math.floor(Math.random() * 3) + 1;
+
+        for (let i = 0; i < numBranches; i++) {
+            const t = 0.2 + Math.random() * 0.6;
+            const branchStartX = fromX + (toX - fromX) * t;
+            const branchStartY = fromY + (toY - fromY) * t;
+
+            const branchLength = 20 + Math.random() * 30;
+            const branchAngle = Math.atan2(toY - fromY, toX - fromX) +
+                (Math.random() - 0.5) * Math.PI * 0.8;
+
+            const branchEndX = branchStartX + Math.cos(branchAngle) * branchLength;
+            const branchEndY = branchStartY + Math.sin(branchAngle) * branchLength;
+
+            ctx.save();
+            ctx.lineWidth = 2;
+            ctx.globalAlpha *= 0.7;
+
+            const branchSegments = 3;
+            let branchPoints = [{ x: branchStartX, y: branchStartY }];
+
+            for (let j = 1; j < branchSegments; j++) {
+                const bt = j / branchSegments;
+                const baseX = branchStartX + (branchEndX - branchStartX) * bt;
+                const baseY = branchStartY + (branchEndY - branchStartY) * bt;
+
+                const perpAngle = branchAngle + Math.PI / 2;
+                const disp = (Math.random() - 0.5) * 8;
+
+                branchPoints.push({
+                    x: baseX + Math.cos(perpAngle) * disp,
+                    y: baseY + Math.sin(perpAngle) * disp
+                });
+            }
+
+            branchPoints.push({ x: branchEndX, y: branchEndY });
+
+            ctx.beginPath();
+            ctx.moveTo(branchPoints[0].x, branchPoints[0].y);
+            for (let j = 1; j < branchPoints.length; j++) {
+                ctx.lineTo(branchPoints[j].x, branchPoints[j].y);
+            }
+            ctx.stroke();
+
+            ctx.restore();
+        }
     }
 }
 
