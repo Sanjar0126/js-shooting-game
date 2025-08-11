@@ -375,8 +375,27 @@ class Game {
                 case 'chainLightning':
                     this.autoUseChainLightning(skill);
                     break;
+                case 'iceSpike':
+                    this.autoUseIceSpike(skill);
+                    break;
             }
         });
+    }
+
+    autoUseIceSpike(skill) {
+        const range = 400;
+        let nearestEnemy = this.findNearestEnemy(range);
+
+        if (nearestEnemy) {
+            this.player.useSkill(
+                'iceSpike',
+                nearestEnemy.x,
+                nearestEnemy.y,
+                this.enemies,
+                this.skillProjectiles,
+                this.explosions
+            );
+        }
     }
 
     autoUseChainLightning(skill) {
