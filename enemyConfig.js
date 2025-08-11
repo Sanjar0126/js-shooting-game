@@ -1,7 +1,7 @@
 export const ENEMY_CONFIG = {
     basic: {
         radius: 12,
-        speed: 50,
+        speed: 100,
         health: 50,
         damage: 20,
         color: '#ff4444',
@@ -10,7 +10,7 @@ export const ENEMY_CONFIG = {
     },
     fast: {
         radius: 8,
-        speed: 120,
+        speed: 200,
         health: 25,
         damage: 15,
         color: '#ff8844',
@@ -19,7 +19,7 @@ export const ENEMY_CONFIG = {
     },
     tank: {
         radius: 18,
-        speed: 25,
+        speed: 60,
         health: 150,
         damage: 35,
         color: '#884444',
@@ -28,7 +28,7 @@ export const ENEMY_CONFIG = {
     },
     shooter: {
         radius: 10,
-        speed: 30,
+        speed: 50,
         health: 40,
         damage: 15,
         color: '#ff4488',
@@ -40,7 +40,7 @@ export const ENEMY_CONFIG = {
     },
     exploder: {
         radius: 14,
-        speed: 80,
+        speed: 100,
         health: 30,
         damage: 50,
         color: '#ff44ff',
