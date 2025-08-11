@@ -66,7 +66,25 @@ class Player {
 
         const currentSpeed = this.baseSpeed * this.speedMultiplier;
 
-        if (mouseWorldPos) {
+        const hasKeyboardInput = keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ||
+            keys['ArrowUp'] || keys['ArrowDown'] || keys['ArrowLeft'] || keys['ArrowRight'];
+
+        if (hasKeyboardInput) {
+            if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+            if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+            if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
+            if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
+
+            if (dx !== 0 && dy !== 0) {
+                const length = Math.sqrt(dx * dx + dy * dy);
+                dx /= length;
+                dy /= length;
+            }
+
+            this.x += dx * currentSpeed * (deltaTime / 1000);
+            this.y += dy * currentSpeed * (deltaTime / 1000);
+        }
+        else if (mouseWorldPos) {
             dx = mouseWorldPos.x - this.x;
             dy = mouseWorldPos.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
