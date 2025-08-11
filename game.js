@@ -229,7 +229,7 @@ class Game {
 
         this.fpsMeter.update(currentTime);
 
-        if (this.gameState === 'playing') {
+        if (this.gameState === 'playing' && this.isRunning && !this.showingSkillSelection) {
             this.update(deltaTime);
         }
 
@@ -469,6 +469,11 @@ class Game {
             this.explosions.forEach(explosion => explosion.render(this.ctx, this.camera));
             this.renderSkillUI();
             this.drawWorldBounds();
+
+            if (this.showingSkillSelection) {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+            }
         } else if (this.gameState === 'menu') {
             this.drawMenuBackground();
         } else if (this.gameState === 'paused') {
