@@ -30,6 +30,17 @@ export const SKILL_CONFIG = {
             player.health = Math.min(player.currentHealth + 20, player.maxHealth);
         },
     },
+    regen: {
+        name: 'Health Regeneration',
+        description: 'Regenerates health over time.',
+        icon: '💚',
+        type: 'passive',
+        maxLevel: 4,
+        effect: (player, level) => {
+            player.healthRegen += 0.5;
+            player.regenTimer = 1000; 
+        },
+    },
     speed: {
         name: 'Agility',
         description: 'Increases the player\'s movement speed.',
