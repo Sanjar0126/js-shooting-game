@@ -584,7 +584,7 @@ export class ChainLightning {
 
             this.drawLightningBolt(ctx, fromX, fromY, toX, toY);
 
-            if (Math.random() < 0.3) { 
+            if (Math.random() < 0.3) {
                 this.drawLightningBranches(ctx, fromX, fromY, toX, toY);
             }
         });
@@ -593,8 +593,8 @@ export class ChainLightning {
     }
 
     drawLightningBolt(ctx, fromX, fromY, toX, toY) {
-        const segments = 8; 
-        const displacement = 15; 
+        const segments = 8;
+        const displacement = 15;
 
         let points = [{ x: fromX, y: fromY }];
 
@@ -733,15 +733,80 @@ export class IceSpike {
         const screenY = this.y - camera.y;
 
         ctx.save();
-        ctx.fillStyle = '#00ccff';
+
+        ctx.translate(screenX, screenY);
+        ctx.rotate(this.rotation || 0);
+
+        const spikes = 6;
+        const outerRadius = this.radius;
+        const innerRadius = this.radius * 0.4;
+
+        ctx.fillStyle = '#a0e0ff';
+        ctx.strokeStyle = '#60c0e0';
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = '#00aadd';
+        ctx.shadowBlur = 8;
+
         ctx.beginPath();
-        ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
+        for (let i = 0; i < spikes * 2; i++) {
+            const angle = (i * Math.PI) / spikes;
+            const radius = i % 2 === 0 ? outerRadius : innerRadius;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.closePath();
         ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#e0f0ff';
+        ctx.strokeStyle = '#80d0f0';
+        ctx.lineWidth = 1;
+        ctx.shadowBlur = 4;
+
+        const coreRadius = this.radius * 0.5;
+        const coreInnerRadius = this.radius * 0.2;
+
+        ctx.beginPath();
+        for (let i = 0; i < spikes * 2; i++) {
+            const angle = (i * Math.PI) / spikes;
+            const radius = i % 2 === 0 ? coreRadius : coreInnerRadius;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
+        ctx.shadowBlur = 2;
         ctx.beginPath();
-        ctx.arc(screenX, screenY, this.radius * 0.6, 0, Math.PI * 2);
+        ctx.arc(0, 0, this.radius * 0.15, 0, Math.PI * 2);
         ctx.fill();
+
+        ctx.strokeStyle = '#b0d0e0';
+        ctx.lineWidth = 0.8;
+        ctx.shadowBlur = 1;
+
+        for (let i = 0; i < spikes; i++) {
+            const angle = (i * 2 * Math.PI) / spikes;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(angle) * outerRadius * 0.8, Math.sin(angle) * outerRadius * 0.8);
+            ctx.stroke();
+        }
+
         ctx.restore();
     }
 }
@@ -829,15 +894,119 @@ export class Meteor {
         const screenY = this.y - camera.y;
 
         ctx.save();
-        ctx.fillStyle = '#ff4400';
+
+
+        const trailLength = 8;
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        const normalizedVx = this.vx / speed;
+        const normalizedVy = this.vy / speed;
+
+        for (let i = 0; i < trailLength; i++) {
+            const t = i / trailLength;
+            const trailX = screenX - normalizedVx * i * 15;
+            const trailY = screenY - normalizedVy * i * 15;
+            const trailRadius = this.radius * (1 - t * 0.7);
+            const alpha = 1 - t * t;
+
+
+            ctx.globalAlpha = alpha * 0.6;
+            ctx.fillStyle = i < 3 ? '#ff2200' : '#ff6600';
+            ctx.beginPath();
+            ctx.arc(trailX + (Math.random() - 0.5) * 2,
+                trailY + (Math.random() - 0.5) * 2,
+                trailRadius * (1.2 + Math.random() * 0.3), 0, Math.PI * 2);
+            ctx.fill();
+
+
+            if (i < 5) {
+                ctx.globalAlpha = alpha * 0.8;
+                ctx.fillStyle = '#ffaa00';
+                ctx.beginPath();
+                ctx.arc(trailX, trailY, trailRadius * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        ctx.globalAlpha = 1;
+
+
+        const rockPoints = 12;
+        const baseRadius = this.radius;
+
+
+        ctx.fillStyle = '#2a1a0a';
+        ctx.strokeStyle = '#1a0a00';
+        ctx.lineWidth = 1;
+
         ctx.beginPath();
-        ctx.arc(screenX - this.vx * 0.05, screenY - this.vy * 0.05, this.radius * 1.5, 0, Math.PI * 2);
+        for (let i = 0; i <= rockPoints; i++) {
+            const angle = (i * 2 * Math.PI) / rockPoints;
+
+            const radiusVariation = 0.7 + Math.sin(angle * 3) * 0.2 + Math.sin(angle * 7) * 0.15;
+            const radius = baseRadius * radiusVariation;
+            const x = screenX + Math.cos(angle) * radius;
+            const y = screenY + Math.sin(angle) * radius;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+
+        ctx.strokeStyle = '#ff4400';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#ff4400';
+        ctx.shadowBlur = 6;
+
+
+        for (let i = 0; i < 3; i++) {
+            const startAngle = (i * 2 * Math.PI) / 3 + Math.PI / 6;
+            const endAngle = startAngle + Math.PI / 4;
+
+            ctx.beginPath();
+            ctx.moveTo(
+                screenX + Math.cos(startAngle) * baseRadius * 0.3,
+                screenY + Math.sin(startAngle) * baseRadius * 0.3
+            );
+            ctx.lineTo(
+                screenX + Math.cos(endAngle) * baseRadius * 0.7,
+                screenY + Math.sin(endAngle) * baseRadius * 0.7
+            );
+            ctx.stroke();
+        }
+
+
+        ctx.shadowBlur = 4;
+        for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI) / 2 + Math.PI / 4;
+            const distance = baseRadius * (0.2 + Math.random() * 0.4);
+            const x = screenX + Math.cos(angle) * distance;
+            const y = screenY + Math.sin(angle) * distance;
+
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(x, y, 2 + Math.random() * 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = '#ff8800';
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        ctx.arc(
+            screenX + normalizedVx * baseRadius * 0.3,
+            screenY + normalizedVy * baseRadius * 0.3,
+            baseRadius * 0.6,
+            0, Math.PI * 2
+        );
         ctx.fill();
 
-        ctx.fillStyle = '#ff8800';
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
-        ctx.fill();
         ctx.restore();
     }
 }
