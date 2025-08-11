@@ -1,3 +1,5 @@
+import { findNearestEnemy } from './utils.js';
+
 export const SKILL_CONFIG = {
     damageBoost: {
         name: 'Damage Boost',
@@ -543,7 +545,12 @@ export class MagicMissile {
             this.trail.shift();
         }
 
-        enemies.forEach(enemy => {
+        const nearbyEnemies = window.game.spatialGrid.getObjectsInRange(
+            this.x, this.y,
+            this.radius
+        );
+
+        nearbyEnemies.forEach(enemy => {
             const dx = enemy.x - this.x;
             const dy = enemy.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -631,13 +638,18 @@ export class Fireball {
         this.y += this.vy * (deltaTime / 1000);
         this.lifetime += deltaTime;
 
-        for (let enemy of enemies) {
+        const nearbyEnemies = window.game.spatialGrid.getObjectsInRange(
+            this.x, this.y,
+            this.radius
+        );
+
+        for (let enemy of nearbyEnemies) {
             const dx = enemy.x - this.x;
             const dy = enemy.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < (this.radius + enemy.radius)) {
-                this.explode(enemies, explosions);
+                this.explode(nearbyEnemies, explosions);
                 return true;
             }
         }
@@ -705,11 +717,16 @@ export class ChainLightning {
     createChain(enemies) {
         let currentPos = { x: this.x, y: this.y };
 
-        for (let i = 0; i < this.chains && enemies.length > 0; i++) {
+        const nearbyEnemies = window.game.spatialGrid.getObjectsInRange(
+            this.x, this.y,
+            this.radius
+        );
+
+        for (let i = 0; i < this.chains && nearbyEnemies.length > 0; i++) {
             let nearestEnemy = null;
             let nearestDistance = this.range;
 
-            enemies.forEach(enemy => {
+            nearbyEnemies.forEach(enemy => {
                 if (this.hitEnemies.has(enemy)) return;
 
                 const dx = enemy.x - currentPos.x;
@@ -890,13 +907,18 @@ export class IceSpike {
         this.y += this.vy * (deltaTime / 1000);
         this.lifetime += deltaTime;
 
-        enemies.forEach(enemy => {
+        const nearbyEnemies = window.game.spatialGrid.getObjectsInRange(
+            this.x, this.y,
+            this.radius
+        );
+
+        nearbyEnemies.forEach(enemy => {
             const dx = enemy.x - this.x;
             const dy = enemy.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < this.radius + enemy.radius) {
-                this.hit(enemies, explosions);
+                this.hit(nearbyEnemies, explosions);
                 return true;
             }
         });
@@ -1037,12 +1059,17 @@ export class Meteor {
         this.x += this.vx * (deltaTime / 1000);
         this.y += this.vy * (deltaTime / 1000);
 
+        const nearbyEnemies = window.game.spatialGrid.getObjectsInRange(
+            this.x, this.y,
+            this.radius
+        );
+
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < 20) {
-            this.impact(enemies, explosions);
+            this.impact(nearbyEnemies, explosions);
             return true;
         }
 
@@ -1186,7 +1213,6 @@ export class Meteor {
             ctx.arc(x, y, 2 + Math.random() * 2, 0, Math.PI * 2);
             ctx.fill();
         }
-
 
         ctx.shadowBlur = 8;
         ctx.fillStyle = '#ff8800';
