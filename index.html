@@ -152,11 +152,11 @@
         }
 
         #skillSelection {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: rgba(0, 0, 0, 0.9);
             display: flex;
             justify-content: center;
@@ -170,7 +170,11 @@
             border-radius: 15px;
             text-align: center;
             color: white;
-            max-width: 700px;
+            max-width: 500px;
+            position: relative;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         #skillContent h2 {
@@ -180,7 +184,7 @@
         }
 
         #skillChoices {
-            display: flex;
+            display: grid;
             gap: 20px;
             justify-content: center;
             flex-wrap: wrap;
@@ -191,7 +195,7 @@
             border: 2px solid #666;
             border-radius: 10px;
             padding: 15px;
-            width: 200px;
+            width: 300px;
             color: white;
             cursor: pointer;
             transition: all 0.3s;
@@ -330,12 +334,7 @@
             <button onclick="restartGame()">Play Again</button>
             <button onclick="returnToMenu()">Main Menu</button>
         </div>
-        <div id="skillSelection" style="display: none;">
-            <div id="skillContent">
-                <h2>Level Up! Choose a Skill:</h2>
-                <div id="skillChoices"></div>
-            </div>
-        </div>
+
     </div>
 
     <div id="mainMenu">
@@ -371,6 +370,13 @@
                 <br>
                 <button onclick="showInstructions()">Back</button>
             </div>
+        </div>
+    </div>
+
+    <div id="skillSelection" style="display: none;">
+        <div id="skillContent">
+            <h2>Level Up! Choose a Skill:</h2>
+            <div id="skillChoices"></div>
         </div>
     </div>
 
