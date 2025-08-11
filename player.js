@@ -90,6 +90,8 @@ class Player {
         const skill = this.skills[skillName];
         if (!skill || skill.cooldown > 0) return false;
 
+        console.log(skill)
+
         switch (skillName) {
             case 'fireball':
                 const fireball = new window.Fireball(
@@ -97,14 +99,14 @@ class Player {
                     skill.damage, skill.radius
                 );
                 skillProjectiles.push(fireball);
-                skill.cooldown = skill.baseCooldown - (skill.level - 1) * 200;
+                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200;
                 break;
             case 'chainLightning':
                 skillProjectiles.push(new window.ChainLightning(
                     this.x, this.y, enemies,
                     skill.damage, skill.chains, skill.range
                 ));
-                skill.cooldown = skill.baseCooldown - (skill.level - 1) * 300;
+                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 300;
                 break;
 
             case 'iceSpike':
@@ -112,7 +114,7 @@ class Player {
                     this.x, this.y, targetX, targetY,
                     skill.damage, skill.slowDuration, skill.slowAmount
                 ));
-                skill.cooldown = skill.baseCooldown - (skill.level - 1) * 200;
+                skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200;
                 break;
         }
 
