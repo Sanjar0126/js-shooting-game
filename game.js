@@ -160,7 +160,7 @@ class Game {
     setupMobileControls() {
         const movementElement = document.getElementById('movementJoystick');
 
-        if (movementElement) {
+        if (movementElement && this.isMobile) {
             this.movementJoystick = new VirtualJoystick(movementElement);
         }
     }
@@ -301,12 +301,20 @@ class Game {
     }
 
     handleMobileInput(deltaTime) {
+        if (!this.movementJoystick) return;
+
         const moveValue = this.movementJoystick.getValue();
 
-        this.keys['KeyW'] = moveValue.y < -0.3;
-        this.keys['KeyS'] = moveValue.y > 0.3;
-        this.keys['KeyA'] = moveValue.x < -0.3;
-        this.keys['KeyD'] = moveValue.x > 0.3;
+        this.keys['KeyW'] = false;
+        this.keys['KeyS'] = false;
+        this.keys['KeyA'] = false;
+        this.keys['KeyD'] = false;
+
+        const threshold = 0.3;
+        if (moveValue.y < -threshold) this.keys['KeyW'] = true;
+        if (moveValue.y > threshold) this.keys['KeyS'] = true;
+        if (moveValue.x < -threshold) this.keys['KeyA'] = true;
+        if (moveValue.x > threshold) this.keys['KeyD'] = true;
     }
 
     update(deltaTime) {
@@ -314,7 +322,7 @@ class Game {
             this.handleMobileInput(deltaTime);
         }
 
-        const mouseWorldPos = {
+        const mouseWorldPos = this.isMobile ? null : {
             x: this.mouse.x + this.camera.x,
             y: this.mouse.y + this.camera.y
         };

@@ -261,14 +261,11 @@
             pointer-events: all;
             touch-action: none;
             bottom: 20px;
+            user-select: none;
         }
 
         .joystick:first-child {
             left: 20px;
-        }
-
-        .joystick:last-child {
-            right: 20px;
         }
 
         .joystick-knob {
@@ -281,6 +278,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             transition: none;
+            pointer-events: none;
         }
 
         @media (hover: none) and (pointer: coarse) {
@@ -303,10 +301,6 @@
 
             .joystick:first-child {
                 left: 10px;
-            }
-
-            .joystick:last-child {
-                right: 10px;
             }
 
             .joystick-knob {
