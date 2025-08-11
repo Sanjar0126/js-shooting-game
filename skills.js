@@ -68,7 +68,7 @@ export const SKILL_CONFIG = {
         icon: '✨',
         type: 'active',
         maxLevel: 5,
-        baseCooldown: 400,
+        baseCooldown: 500,
         baseDamage: 20,
         aimNearestEnemy: true,
         baseRange: 800,
@@ -220,7 +220,9 @@ export const SKILL_CONFIG = {
 
 export class SkillSystem {
     constructor() {
-        this.playerSkills = {};
+        this.playerSkills = {
+            magicMissile: 1,
+        };
     }
 
     generateSkillChoices(count = 3) {
@@ -269,7 +271,9 @@ export class SkillSystem {
     }
 
     reset() {
-        this.playerSkills = {};
+        this.playerSkills = {
+            magicMissile: 1,
+        };
     }
 }
 
@@ -344,13 +348,16 @@ export class MagicMissile {
 
         this.lifetime = 0;
         this.maxLifetime = 3000;
-        this.hitEnemies = new Set();
 
         this.trail = [];
         this.maxTrailLength = 8;
+
+        this.isHit = false;
     }
 
     update(deltaTime, enemies) {
+        if (this.isHit) return true;
+
         this.x += this.vx * (deltaTime / 1000);
         this.y += this.vy * (deltaTime / 1000);
         this.lifetime += deltaTime;
@@ -361,8 +368,6 @@ export class MagicMissile {
         }
 
         enemies.forEach(enemy => {
-            if (this.hitEnemies.has(enemy)) return;
-
             const dx = enemy.x - this.x;
             const dy = enemy.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -370,16 +375,8 @@ export class MagicMissile {
             if (distance < this.radius + enemy.radius) {
                 enemy.takeDamage(this.damage);
 
-                if (window.game && window.game.damageNumbers) {
-                    window.game.damageNumbers.addDamageNumber(
-                        enemy.x + (Math.random() - 0.5) * 20,
-                        enemy.y - 10,
-                        this.damage,
-                        'skill'
-                    );
-                }
+                this.isHit = true;
 
-                this.hitEnemies.add(enemy);
                 return true; 
             }
         });

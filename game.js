@@ -150,14 +150,7 @@ class Game {
         this.totalXP = 0;
 
         this.player = new Player(this.worldWidth / 2, this.worldHeight / 2);
-        if (!this.player.skills.magicMissile) {
-            this.player.skills.magicMissile = {
-                level: 1,
-                cooldown: 0,
-                damage: 20,
-                speed: 400,
-            };
-        }
+        SKILL_CONFIG.magicMissile.effect(this.player, 1);
 
         this.enemySpawnTimer = 0;
         this.waveTimer = 0;
@@ -272,35 +265,12 @@ class Game {
         this.player.update(deltaTime, this.keys, mouseWorldPos, this.enemies, this.bullets, this.camera);
         this.camera.update(this.player);
 
-        if (this.isMobile && this.shootingJoystick) {
-            const shootValue = this.shootingJoystick.getValue();
-            if (Math.abs(shootValue.x) > 0.1 || Math.abs(shootValue.y) > 0.1) {
-                const shootTargetX = this.player.x + shootValue.x * 100;
-                const shootTargetY = this.player.y + shootValue.y * 100;
-
-                const screenX = shootTargetX - this.camera.x;
-                const screenY = shootTargetY - this.camera.y;
-
-                this.player.shoot(screenX, screenY, this.bullets, this.camera);
-            }
-        }
-        // else if (!this.isMobile && this.mouse.isPressed) {
-        //     this.player.shoot(this.mouse.x, this.mouse.y, this.bullets, this.camera);
-        // }
-
         this.player.x = Math.max(this.player.radius, Math.min(this.worldWidth - this.player.radius, this.player.x));
         this.player.y = Math.max(this.player.radius, Math.min(this.worldHeight - this.player.radius, this.player.y));
 
         this.waveTimer += deltaTime;
         if (this.waveTimer >= this.waveDuration) {
             this.nextWave();
-        }
-
-        for (let i = this.bullets.length - 1; i >= 0; i--) {
-            this.bullets[i].update(deltaTime);
-            if (this.bullets[i].isExpired()) {
-                this.bullets.splice(i, 1);
-            }
         }
 
         for (let i = this.enemies.length - 1; i >= 0; i--) {
