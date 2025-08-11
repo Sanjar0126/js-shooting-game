@@ -147,7 +147,7 @@ class Enemy {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance <= this.explosionRadius) {
-                player.takeDamage(this.damage*player.damageReduction);
+                player.takeDamage(this.damage * player.damageReduction);
             }
         }
     }
@@ -157,7 +157,7 @@ class Enemy {
 
         if (window.game && window.game.damageNumbers) {
             window.game.damageNumbers.addDamageNumber(
-                this.x + (Math.random() - 0.5) * 20, 
+                this.x + (Math.random() - 0.5) * 20,
                 this.y - 10,
                 damage,
                 'normal'
@@ -241,22 +241,43 @@ class Enemy {
                 ctx.rotate(tankAngle);
 
                 const size = this.radius * 0.8;
-                ctx.fillRect(-size, -size, size * 2, size * 2);
 
-                ctx.strokeStyle = '#660000';
+                ctx.fillStyle = '#444444';
+                ctx.fillRect(-size, -size, size * 2, size * 2);
+                ctx.strokeStyle = '#222222';
                 ctx.lineWidth = 3;
                 ctx.strokeRect(-size, -size, size * 2, size * 2);
 
-                ctx.fillStyle = '#aa6666';
-                const innerSize = size * 0.5;
-                ctx.fillRect(-innerSize, -innerSize, innerSize * 2, innerSize * 2);
+                ctx.fillStyle = '#666666';
+                const cabSize = size * 0.5;
+                ctx.fillRect(-cabSize, -cabSize, cabSize * 2, cabSize * 2);
 
-                ctx.fillStyle = '#ffff00';
-                ctx.fillRect(size * 0.5, -size * 0.3, size * 0.8, size * 0.6);
+                ctx.fillStyle = '#884400';
+                ctx.beginPath();
+                ctx.moveTo(size, -size * 1.2);
+                ctx.lineTo(size + size * 0.8, 0);
+                ctx.lineTo(size, size * 1.2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#552200';
+                ctx.stroke();
 
-                ctx.fillStyle = '#333333';
-                ctx.fillRect(-size * 1.1, -size * 0.3, size * 2.2, size * 0.2);
-                ctx.fillRect(-size * 1.1, size * 0.1, size * 2.2, size * 0.2);
+                ctx.fillStyle = '#cccccc';
+                for (let i = -2; i <= 2; i++) {
+                    const spikeY = i * (size * 0.4);
+                    ctx.beginPath();
+                    ctx.moveTo(size + size * 0.8, spikeY - size * 0.1);
+                    ctx.lineTo(size + size * 1.4, spikeY);
+                    ctx.lineTo(size + size * 0.8, spikeY + size * 0.1);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                ctx.fillStyle = '#aa0000';
+                ctx.fillRect(size * 0.3, -size * 0.15, size * 0.8, size * 0.3);
+
+                ctx.resetTransform();
+
                 break;
 
             case ShooterEnemy: //hexagon
