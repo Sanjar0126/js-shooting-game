@@ -3,7 +3,7 @@ import { Enemy } from './enemy.js';
 import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
-import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG } from './skills.js';
+import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike } from './skills.js';
 
 class Camera {
     constructor(width, height) {
@@ -368,66 +368,22 @@ class Game {
             const skill = this.player.skills[skillName];
             if (!skill || skill.cooldown > 0) return;
 
-            switch (skillName) {
-                case 'fireball':
-                    this.autoUseFireball(skill);
-                    break;
-                case 'chainLightning':
-                    this.autoUseChainLightning(skill);
-                    break;
-                case 'iceSpike':
-                    this.autoUseIceSpike(skill);
-                    break;
+            const range = 400;
+            let nearestEnemy = this.findNearestEnemy(range);
+
+            // console.log(skill);
+
+            if (nearestEnemy) {
+                this.player.useSkill(
+                    skillName,
+                    nearestEnemy.x,
+                    nearestEnemy.y,
+                    this.enemies,
+                    this.skillProjectiles,
+                    this.explosions
+                );
             }
         });
-    }
-
-    autoUseIceSpike(skill) {
-        const range = 400;
-        let nearestEnemy = this.findNearestEnemy(range);
-
-        if (nearestEnemy) {
-            this.player.useSkill(
-                'iceSpike',
-                nearestEnemy.x,
-                nearestEnemy.y,
-                this.enemies,
-                this.skillProjectiles,
-                this.explosions
-            );
-        }
-    }
-
-    autoUseChainLightning(skill) {
-        const range = 400;
-        let nearestEnemy = this.findNearestEnemy(range);
-
-        if (nearestEnemy) {
-            this.player.useSkill(
-                'chainLightning',
-                nearestEnemy.x,
-                nearestEnemy.y,
-                this.enemies,
-                this.skillProjectiles,
-                this.explosions
-            );
-        }
-    }
-
-    autoUseFireball(skill) {
-        const range = 400;
-        let nearestEnemy = this.findNearestEnemy(range);
-
-        if (nearestEnemy) {
-            this.player.useSkill(
-                'fireball',
-                nearestEnemy.x,
-                nearestEnemy.y,
-                this.enemies,
-                this.skillProjectiles,
-                this.explosions
-            );
-        }
     }
 
     findNearestEnemy(maxRange = Infinity) {
@@ -751,7 +707,7 @@ class Game {
             this.isRunning = true;
             document.getElementById('skillSelection').style.display = 'none';
 
-            console.log(`Selected skill: ${skillId}`);
+            // console.log(`Selected skill: ${skillId}`);
         }
     }
 
@@ -779,5 +735,6 @@ window.SKILL_CONFIG = SKILL_CONFIG;
 window.Fireball = Fireball;
 window.Explosion = Explosion;
 window.ChainLightning = ChainLightning;
+window.IceSpike = IceSpike
 
 export { Game };
