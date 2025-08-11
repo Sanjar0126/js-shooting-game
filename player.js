@@ -97,14 +97,22 @@ class Player {
                     skill.damage, skill.radius
                 );
                 skillProjectiles.push(fireball);
-                skill.cooldown = 3000 - (skill.level - 1) * 200;
+                skill.cooldown = skill.baseCooldown - (skill.level - 1) * 200;
                 break;
             case 'chainLightning':
                 skillProjectiles.push(new window.ChainLightning(
                     this.x, this.y, enemies,
                     skill.damage, skill.chains, skill.range
                 ));
-                skill.cooldown = 3000 - (skill.level - 1) * 300;
+                skill.cooldown = skill.baseCooldown - (skill.level - 1) * 300;
+                break;
+
+            case 'iceSpike':
+                skillProjectiles.push(new window.IceSpike(
+                    this.x, this.y, targetX, targetY,
+                    skill.damage, skill.slowDuration, skill.slowAmount
+                ));
+                skill.cooldown = skill.baseCooldown - (skill.level - 1) * 200;
                 break;
         }
 
