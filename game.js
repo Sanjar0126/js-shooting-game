@@ -3,7 +3,7 @@ import { Enemy } from './enemy.js';
 import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
-import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor} from './skills.js';
+import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor } from './skills.js';
 
 class Camera {
     constructor(width, height) {
@@ -369,13 +369,38 @@ class Game {
             if (!skill || skill.cooldown > 0) return;
 
             const range = 400;
-            let nearestEnemy = this.findNearestEnemy(range);
+            let targets = [];
 
-            if (nearestEnemy) {
+            let aimNearest = SKILL_CONFIG[skillName].aimNearestEnemy || false;
+            let aimMultiple = SKILL_CONFIG[skillName].aimMultipleEnemies || false;
+            let count = 1;
+
+            if (aimMultiple) {
+                count = skill.count || 1;
+            }
+
+            if (aimNearest) {
+                let nearestEnemy = this.findNearestEnemy(range);
+                targets.push({
+                    x: nearestEnemy.x,
+                    y: nearestEnemy.y
+                });
+            } else {
+                let randomEnemies = this.findRandomEnemy(range * 1.2, count);
+                if (randomEnemies) {
+                    randomEnemies.forEach(enemy => {
+                        targets.push({
+                            x: enemy.x,
+                            y: enemy.y
+                        });
+                    });
+                }
+            }
+
+            if (targets.length > 0) {
                 this.player.useSkill(
                     skillName,
-                    nearestEnemy.x,
-                    nearestEnemy.y,
+                    targets,
                     this.enemies,
                     this.skillProjectiles,
                     this.explosions
@@ -401,6 +426,33 @@ class Game {
 
         return nearestEnemy;
     }
+
+    findRandomEnemy(maxRange = Infinity, count = 1) {
+        const enemiesInRange = this.enemies.filter(enemy => {
+            const dx = enemy.x - this.player.x;
+            const dy = enemy.y - this.player.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance <= maxRange;
+        });
+
+        if (enemiesInRange.length === 0) {
+            return null;
+        }
+
+        let chosen = [];
+        let usedIndices = new Set();
+
+        while (chosen.length < count && chosen.length < enemiesInRange.length) {
+            const index = Math.floor(Math.random() * enemiesInRange.length);
+            if (!usedIndices.has(index)) {
+                usedIndices.add(index);
+                chosen.push(enemiesInRange[index]);
+            }
+        }
+
+        return chosen;
+    }
+
 
     render() {
         this.ctx.fillStyle = '#2a2a2a';

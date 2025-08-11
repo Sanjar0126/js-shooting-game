@@ -86,16 +86,14 @@ class Player {
         });
     }
 
-    useSkill(skillName, targetX, targetY, enemies, skillProjectiles, explosions) {
+    useSkill(skillName, targets, enemies, skillProjectiles, explosions) {
         const skill = this.skills[skillName];
         if (!skill || skill.cooldown > 0) return false;
-
-        console.log(skill)
 
         switch (skillName) {
             case 'fireball':
                 const fireball = new window.Fireball(
-                    this.x, this.y, targetX, targetY,
+                    this.x, this.y, targets[0].x, targets[0].y,
                     skill.damage, skill.radius
                 );
                 skillProjectiles.push(fireball);
@@ -111,7 +109,7 @@ class Player {
 
             case 'iceSpike':
                 skillProjectiles.push(new window.IceSpike(
-                    this.x, this.y, targetX, targetY,
+                    this.x, this.y, targets[0].x, targets[0].y,
                     skill.damage, skill.slowDuration, skill.slowAmount
                 ));
                 skill.cooldown = window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200;
@@ -119,10 +117,10 @@ class Player {
 
             case 'meteor':
                 for (let i = 0; i < skill.count; i++) {
-                    const offsetX = (Math.random() - 0.5) * 100;
-                    const offsetY = (Math.random() - 0.5) * 100;
+                    const offsetX = (Math.random() - 0.5) * 60;
+                    const offsetY = (Math.random() - 0.5) * 60;
                     skillProjectiles.push(new window.Meteor(
-                        targetX + offsetX, targetY + offsetY,
+                        targets[i].x + offsetX, targets[i].y + offsetY,
                         skill.damage, skill.radius
                     ));
                 }

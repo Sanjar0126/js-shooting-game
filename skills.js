@@ -50,6 +50,7 @@ export const SKILL_CONFIG = {
         baseCooldown: 3000,
         baseDamege: 80,
         baseRadius: 60,
+        aimNearestEnemy: true,
         effect: (player, level) => {
             if (!player.skills.fireball) {
                 player.skills.fireball = {
@@ -75,6 +76,7 @@ export const SKILL_CONFIG = {
         baseCooldown: 3000,
         baseDamage: 60,
         baseChains: 3,
+        aimNearestEnemy: true,
         effect: (player, level) => {
             if (!player.skills.chainLightning) {
                 player.skills.chainLightning = {
@@ -101,6 +103,7 @@ export const SKILL_CONFIG = {
         baseDamage: 50,
         baseSlowDuration: 2000,
         baseSlowAmount: 0.5,
+        aimNearestEnemy: true,
         effect: (player, level) => {
             if (!player.skills.iceSpike) {
                 player.skills.iceSpike = {
@@ -128,6 +131,8 @@ export const SKILL_CONFIG = {
         baseDamage: 100,
         baseRadius: 80,
         baseCount: 1,
+        aimNearestEnemy: false,
+        aimMultipleEnemies: true,
         effect: (player, level) => {
             if (!player.skills.meteor) {
                 player.skills.meteor = {
