@@ -3,7 +3,7 @@ import { Enemy } from './enemy.js';
 import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
-import { SkillSystem, Fireball, Explosion, SKILL_CONFIG } from './skills.js';
+import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG } from './skills.js';
 
 class Camera {
     constructor(width, height) {
@@ -372,8 +372,27 @@ class Game {
                 case 'fireball':
                     this.autoUseFireball(skill);
                     break;
+                case 'chainLightning':
+                    this.autoUseChainLightning(skill);
+                    break;
             }
         });
+    }
+
+    autoUseChainLightning(skill) {
+        const range = 400;
+        let nearestEnemy = this.findNearestEnemy(range);
+
+        if (nearestEnemy) {
+            this.player.useSkill(
+                'chainLightning',
+                nearestEnemy.x,
+                nearestEnemy.y,
+                this.enemies,
+                this.skillProjectiles,
+                this.explosions
+            );
+        }
     }
 
     autoUseFireball(skill) {
@@ -740,5 +759,6 @@ class Game {
 window.SKILL_CONFIG = SKILL_CONFIG;
 window.Fireball = Fireball;
 window.Explosion = Explosion;
+window.ChainLightning = ChainLightning;
 
 export { Game };
