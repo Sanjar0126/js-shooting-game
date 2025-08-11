@@ -44,6 +44,9 @@ class Player {
             return;
         }
 
+        let dx = 0;
+        let dy = 0;
+
         this.updateSkillCooldowns(deltaTime);
 
         if (this.isShielded) {
@@ -64,8 +67,8 @@ class Player {
         const currentSpeed = this.baseSpeed * this.speedMultiplier;
 
         if (mouseWorldPos) {
-            const dx = mouseWorldPos.x - this.x;
-            const dy = mouseWorldPos.y - this.y;
+            dx = mouseWorldPos.x - this.x;
+            dy = mouseWorldPos.y - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 10) {
@@ -75,6 +78,11 @@ class Player {
                 this.x += moveX;
                 this.y += moveY;
             }
+        } else {
+            if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+            if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+            if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
+            if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
         }
     }
 

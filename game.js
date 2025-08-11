@@ -82,7 +82,6 @@ class Game {
 
         this.isMobile = this.detectMobile();
         this.movementJoystick = null;
-        this.shootingJoystick = null;
 
         this.skillSystem = new SkillSystem();
         this.skillProjectiles = [];
@@ -113,11 +112,9 @@ class Game {
 
     setupMobileControls() {
         const movementElement = document.getElementById('movementJoystick');
-        const shootingElement = document.getElementById('shootingJoystick');
 
-        if (movementElement && shootingElement) {
+        if (movementElement) {
             this.movementJoystick = new VirtualJoystick(movementElement);
-            this.shootingJoystick = new VirtualJoystick(shootingElement);
         }
     }
 
@@ -253,7 +250,7 @@ class Game {
     }
 
     update(deltaTime) {
-        if (this.isMobile && this.movementJoystick && this.shootingJoystick) {
+        if (this.isMobile && this.movementJoystick) {
             this.handleMobileInput(deltaTime);
         }
 
