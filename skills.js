@@ -717,16 +717,11 @@ export class ChainLightning {
     createChain(enemies) {
         let currentPos = { x: this.x, y: this.y };
 
-        const nearbyEnemies = window.game.spatialGrid.getObjectsInRange(
-            this.x, this.y,
-            this.radius
-        );
-
-        for (let i = 0; i < this.chains && nearbyEnemies.length > 0; i++) {
+        for (let i = 0; i < this.chains && enemies.length > 0; i++) {
             let nearestEnemy = null;
             let nearestDistance = this.range;
 
-            nearbyEnemies.forEach(enemy => {
+            enemies.forEach(enemy => {
                 if (this.hitEnemies.has(enemy)) return;
 
                 const dx = enemy.x - currentPos.x;
