@@ -346,9 +346,18 @@
                 height: 32px;
             }
 
-            #gameContainer {
-                border: none;
+
+            @media screen and (max-width: 768px) {
+                body {
+                    min-height: 100vh;
+                    min-height: -webkit-fill-available;
+                }
+
+                #gameContainer {
+                    border: none;
+                }
             }
+        }
     </style>
 </head>
 
