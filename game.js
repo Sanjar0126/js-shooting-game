@@ -299,7 +299,9 @@ class Game {
     }
 
     handleMobileInput(deltaTime) {
-        if (!this.movementJoystick) return;
+        if (!this.movementJoystick || this.gameState !== 'playing' || this.showingSkillSelection) {
+            return;
+        }
 
         const moveValue = this.movementJoystick.getValue();
 
