@@ -25,6 +25,11 @@
             overflow: hidden;
         }
 
+        body.playing {
+            touch-action: none;
+            overflow: hidden;
+        }
+
         #gameContainer {
             position: relative;
             border: 2px solid #333;
@@ -63,7 +68,9 @@
             border-radius: 10px;
             text-align: center;
             display: none;
-            z-index: 20;
+            z-index: 150;
+            pointer-events: auto;
+            touch-action: auto;
         }
 
         button {
@@ -75,6 +82,11 @@
             border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
+
+            position: relative;
+            z-index: 10000;
+            pointer-events: auto !important;
+            touch-action: manipulation;
         }
 
         button:hover {
@@ -93,6 +105,8 @@
             justify-content: center;
             align-items: center;
             z-index: 100;
+            pointer-events: auto;
+            touch-action: auto;
         }
 
         #menuContent {
@@ -157,10 +171,6 @@
             display: none;
         }
 
-        #gameOver {
-            z-index: 150;
-        }
-
         #skillSelection {
             position: fixed;
             top: 0;
@@ -172,6 +182,8 @@
             justify-content: center;
             align-items: center;
             z-index: 200;
+            pointer-events: auto;
+            touch-action: auto;
         }
 
         #skillContent {
@@ -298,42 +310,11 @@
             }
         }
 
-        .joystick {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            pointer-events: all;
-            touch-action: none;
-            bottom: 20px;
-            user-select: none;
-        }
-
-        .joystick:first-child {
-            left: 20px;
-        }
-
-        .joystick-knob {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: none;
-            pointer-events: none;
-        }
-
         @media (hover: none) and (pointer: coarse) {
             body {
                 touch-action: none;
             }
         }
-
 
         @media screen and (max-width: 768px) {
             body {
@@ -415,12 +396,6 @@
             <div id="skillChoices"></div>
         </div>
     </div>
-
-    <!-- <div id="mobileControls" class="mobile-controls">
-        <div id="movementJoystick" class="joystick">
-            <div class="joystick-knob"></div>
-        </div>
-    </div> -->
 
     <script type="module" src="index.js"></script>
     </script>
