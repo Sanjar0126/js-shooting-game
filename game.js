@@ -82,8 +82,10 @@ class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.width = this.canvas.width;
-        this.height = this.canvas.height;
+
+        this.width = this.canvas.clientWidth || 800;
+        this.height = this.canvas.clientHeight || 600;
+        this.devicePixelRatio = window.devicePixelRatio || 1;
 
         this.baseWidth = 800;
         this.baseHeight = 600;
@@ -509,6 +511,8 @@ class Game {
 
 
     render() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+    
         this.ctx.fillStyle = '#2a2a2a';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
@@ -669,15 +673,15 @@ class Game {
         this.width = newWidth;
         this.height = newHeight;
 
-        this.scale = 1;
+        // this.scale = 1;
 
         if (this.camera) {
             this.camera.width = newWidth;
             this.camera.height = newHeight;
         }
 
-        this.canvas.width = newWidth;
-        this.canvas.height = newHeight;
+        // this.canvas.width = newWidth;
+        // this.canvas.height = newHeight;
     }
 
     spawnEnemy() {

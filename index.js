@@ -45,18 +45,26 @@ window.returnToMenu = function () {
 function resizeCanvas() {
     const canvas = document.getElementById('gameCanvas');
     const scale = 0.95;
-    
-    const width = window.innerWidth * scale;
-    const height = window.innerHeight * scale;
-    
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
 
-    canvas.width = width;
-    canvas.height = height;
+    const deviceWidth = window.innerWidth;
+    const deviceHeight = window.innerHeight;
+
+    const displayWidth = deviceWidth * scale;
+    const displayHeight = deviceHeight * scale;
+    
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
+    
+    canvas.width = displayWidth * devicePixelRatio;
+    canvas.height = displayHeight * devicePixelRatio;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.scale(devicePixelRatio, devicePixelRatio);
     
     if (window.game) {
-        window.game.handleResize(width, height);
+        window.game.handleResize(displayWidth, displayHeight);
     }
 }
 
