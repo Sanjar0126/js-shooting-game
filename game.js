@@ -158,10 +158,8 @@ class Game {
     }
 
     setupMobileControls() {
-        const movementElement = document.getElementById('movementJoystick');
-
-        if (movementElement && this.isMobile) {
-            this.movementJoystick = new VirtualJoystick(movementElement);
+        if (this.isMobile) {
+            this.movementJoystick = new VirtualJoystick(document.body);
         }
     }
 
@@ -310,7 +308,7 @@ class Game {
         this.keys['KeyA'] = false;
         this.keys['KeyD'] = false;
 
-        const threshold = 0.3;
+        const threshold = 0.2;
         if (moveValue.y < -threshold) this.keys['KeyW'] = true;
         if (moveValue.y > threshold) this.keys['KeyS'] = true;
         if (moveValue.x < -threshold) this.keys['KeyA'] = true;

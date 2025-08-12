@@ -15,6 +15,14 @@
             align-items: center;
             min-height: 100vh;
             font-family: Arial, sans-serif;
+
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            overflow: hidden;
         }
 
         #gameContainer {
@@ -31,6 +39,8 @@
             image-rendering: pixelated;
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
+
+            touch-action: none;
         }
 
         #ui {
@@ -251,6 +261,43 @@
             pointer-events: none;
         }
 
+        .dynamic-joystick {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1001;
+            animation: joystick-appear 0.1s ease-out;
+        }
+
+        .dynamic-joystick-knob {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            transition: none;
+        }
+
+        @keyframes joystick-appear {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         .joystick {
             position: absolute;
             width: 100px;
@@ -282,28 +329,23 @@
         }
 
         @media (hover: none) and (pointer: coarse) {
-            .mobile-controls {
-                display: block;
+            body {
+                touch-action: none;
             }
         }
 
 
         @media screen and (max-width: 768px) {
-            .mobile-controls {
-                display: block;
+            body {
+                touch-action: none;
             }
 
-            .joystick {
+            .dynamic-joystick {
                 width: 80px;
                 height: 80px;
-                bottom: 10px;
             }
 
-            .joystick:first-child {
-                left: 10px;
-            }
-
-            .joystick-knob {
+            .dynamic-joystick-knob {
                 width: 32px;
                 height: 32px;
             }
@@ -374,11 +416,11 @@
         </div>
     </div>
 
-    <div id="mobileControls" class="mobile-controls">
+    <!-- <div id="mobileControls" class="mobile-controls">
         <div id="movementJoystick" class="joystick">
             <div class="joystick-knob"></div>
         </div>
-    </div>
+    </div> -->
 
     <script type="module" src="index.js"></script>
     </script>
