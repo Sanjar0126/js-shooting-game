@@ -5,7 +5,7 @@ import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
 import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor, MagicMissile } from './skills.js';
 import { DamageNumberSystem } from './damageNumbers.js';
-import { findNearestEnemy, getDistance } from './utils.js';
+import { GameMath } from './utils.js';
 
 class Camera {
     constructor(width, height) {
@@ -91,52 +91,61 @@ class Game {
         this.baseHeight = 600;
         this.scale = 1;
 
-        this.enemyBullets = [];
-
+        
         this.worldWidth = 6400;
         this.worldHeight = 6400;
-
+        
         this.spatialGrid = new SpatialGrid(this.worldHeight, this.worldWidth, 200);
-
+        
         this.camera = new Camera(this.width, this.height);
-        this.deathAnimations = [];
-
+        
         this.gameState = 'menu'; // 'menu', 'playing', 'paused', 'gameOver'
-
+        
         this.isRunning = false;
         this.score = 0;
-
+        
         this.wave = 1;
         this.waveTimer = 0;
         this.waveDuration = 60000; // 60 seconds 
         this.difficultyMultiplier = 1.0;
-
+        
         this.playerLevel = 1;
         this.currentXP = 0;
         this.xpToNextLevel = 100;
         this.totalXP = 0;
-
-        this.player = null;
-        this.bullets = [];
-        this.enemies = [];
-
+        
+        
         this.keys = {};
         this.mouse = { x: 0, y: 0, isPressed: false };
-
+        
         this.lastTime = 0;
         this.enemySpawnTimer = 0;
         this.waveTimer = 0;
-
+        
         this.fpsMeter = new FPSMeter();
-
+        
         this.isMobile = this.detectMobile();
         this.movementJoystick = null;
-
+        
         this.skillSystem = new SkillSystem();
-        this.skillProjectiles = [];
+
+        this.player = null;
+        this.enemies = [];
         this.explosions = [];
+        this.skillProjectiles = [];
+        this.deathAnimations = [];
+        this.enemyBullets = [];
+    
         this.showingSkillSelection = false;
         this.skillChoices = [];
+
+        this.debugData = {
+            enemiesCreated: 0,
+            explosionsCreated: 0,
+            skillProjectilesCreated: 0,
+            deathAnimationsCreated: 0,
+            enemyBulletsCreated: 0,
+        }
 
         this.damageNumbers = new DamageNumberSystem();
 
@@ -182,8 +191,6 @@ class Game {
         this.waveTimer = 0;
         this.difficultyMultiplier = 1.0;
 
-
-        this.bullets = [];
         this.enemies = [];
         this.enemyBullets = [];
         this.deathAnimations = [];
@@ -334,7 +341,7 @@ class Game {
             this.spatialGrid.addObject(enemy);
         });
 
-        this.player.update(deltaTime, this.keys, mouseWorldPos, this.enemies, this.bullets, this.camera);
+        this.player.update(deltaTime, this.keys, mouseWorldPos);
         this.camera.update(this.player);
 
         this.player.x = Math.max(this.player.radius, Math.min(this.worldWidth - this.player.radius, this.player.x));
@@ -352,6 +359,7 @@ class Game {
                 this.score += this.enemies[i].scoreValue;
 
                 this.deathAnimations.push(new DeathAnimation(this.enemies[i].x, this.enemies[i].y, 'enemy'));
+                this.debugData.deathAnimationsCreated++;
                 this.enemies.splice(i, 1);
                 this.enemyCount--;
             }
@@ -411,6 +419,8 @@ class Game {
         const playerSkills = Object.keys(this.player.skills);
         if (playerSkills.length === 0) return;
 
+        const nearestEnemy = GameMath.findNearestEnemy(1000, this.player.x, this.player.y);
+
         playerSkills.forEach(skillName => {
             const skill = this.player.skills[skillName];
             if (!skill || skill.cooldown > 0) return;
@@ -427,7 +437,6 @@ class Game {
             }
 
             if (aimNearest) {
-                let nearestEnemy = findNearestEnemy(range, this.player.x, this.player.y);
                 if (!nearestEnemy) return;
                 targets.push({
                     x: nearestEnemy.x || 0,
@@ -458,7 +467,7 @@ class Game {
     }
 
     drawLineToNearestEnemy() {
-        const nearestEnemy = findNearestEnemy(1000, this.player.x, this.player.y);
+        const nearestEnemy = GameMath.findNearestEnemy(1000, this.player.x, this.player.y);
         if (!nearestEnemy) return;
 
         const playerScreenX = this.player.x - this.camera.x;
@@ -481,7 +490,7 @@ class Game {
 
     findRandomEnemy(maxRange = Infinity, count = 1) {
         const enemiesInRange = this.enemies.filter(enemy => {
-            const distance = getDistance(this.player.x, this.player.y, enemy.x, enemy.y);
+            const distance = GameMath.getDistance(this.player.x, this.player.y, enemy.x, enemy.y);
 
             return distance <= maxRange;
         });
@@ -507,14 +516,13 @@ class Game {
 
     render() {
         this.ctx.clearRect(0, 0, this.width, this.height);
-    
+
         this.ctx.fillStyle = '#2a2a2a';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
         if (this.gameState === 'playing') {
             this.drawGrid();
             this.player.render(this.ctx, this.camera);
-            this.bullets.forEach(bullet => bullet.render(this.ctx, this.camera));
             this.enemies.forEach(enemy => enemy.render(this.ctx, this.camera));
             this.enemyBullets.forEach(bullet => bullet.render(this.ctx, this.camera));
             this.deathAnimations.forEach(animation => animation.render(this.ctx, this.camera));
@@ -536,7 +544,6 @@ class Game {
         } else if (this.gameState === 'paused') {
             this.drawGrid();
             this.player.render(this.ctx, this.camera);
-            this.bullets.forEach(bullet => bullet.render(this.ctx, this.camera));
             this.enemies.forEach(enemy => enemy.render(this.ctx, this.camera));
             this.enemyBullets.forEach(bullet => bullet.render(this.ctx, this.camera));
             this.deathAnimations.forEach(animation => animation.render(this.ctx, this.camera));
@@ -704,19 +711,10 @@ class Game {
         const clampedY = Math.max(50, Math.min(this.worldHeight - 50, y));
 
         this.enemies.push(new Enemy(clampedX, clampedY, enemyType));
+        this.debugData.enemiesCreated ++;
     }
 
     checkCollisions() {
-        for (let i = this.bullets.length - 1; i >= 0; i--) {
-            for (let j = this.enemies.length - 1; j >= 0; j--) {
-                if (this.isColliding(this.bullets[i], this.enemies[j])) {
-                    this.enemies[j].takeDamage(this.bullets[i].damage * this.player.damageMultiplier);
-                    this.bullets.splice(i, 1);
-                    break;
-                }
-            }
-        }
-
         this.enemies.forEach(enemy => {
             if (this.isColliding(this.player, enemy)) {
                 this.player.takeDamage(enemy.damage * this.player.damageReduction);
@@ -735,7 +733,7 @@ class Game {
     }
 
     isColliding(obj1, obj2) {
-        const distance = getDistance(obj1.x, obj1.y, obj2.x, obj2.y);
+        const distance = GameMath.getDistance(obj1.x, obj1.y, obj2.x, obj2.y);
         return distance < (obj1.radius + obj2.radius);
     }
 
@@ -837,7 +835,11 @@ class Game {
         document.getElementById('xp').textContent = this.currentXP;
         document.getElementById('xpNext').textContent = this.xpToNextLevel;
         document.getElementById('enemyCount').textContent = this.enemyCount;
-        // console.log(this.enemyCount);
+        document.getElementById('debugData').textContent = this.debugData.enemiesCreated + ' enemies, ' +
+            this.debugData.explosionsCreated + ' explosions, ' +
+            this.debugData.skillProjectilesCreated + ' projectiles, ' +
+            this.debugData.deathAnimationsCreated + ' death animations, ' +
+            this.debugData.enemyBulletsCreated + ' enemy bullets';
     }
 
     restart() {

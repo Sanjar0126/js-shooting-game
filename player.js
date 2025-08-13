@@ -1,4 +1,4 @@
-import { getDistance } from "./utils";
+import { GameMath } from "./utils.js";
 
 class Player {
     constructor(x, y) {
@@ -40,7 +40,7 @@ class Player {
         this.radius = 15;
     }
 
-    update(deltaTime, keys, mouseWorldPos, enemies, bullets, camera) {
+    update(deltaTime, keys, mouseWorldPos) {
         if (this.isDead) {
             this.deathTimer += deltaTime;
             return;
@@ -87,7 +87,9 @@ class Player {
             this.y += dy * currentSpeed * (deltaTime / 1000);
         }
         else if (mouseWorldPos) {
-            const distance = getDistance(this.x, this.y, mouseWorldPos.x, mouseWorldPos.y);
+            const distance = GameMath.getDistance(this.x, this.y, mouseWorldPos.x, mouseWorldPos.y);
+            dx = mouseWorldPos.x - this.x;
+            dy = mouseWorldPos.y - this.y;
 
             if (distance > 10) {
                 const moveX = (dx / distance) * currentSpeed * (deltaTime / 1000);
@@ -115,7 +117,6 @@ class Player {
     useSkill(skillName, targets, enemies, skillProjectiles, explosions) {
         const skill = this.skills[skillName];
         if (!skill || skill.cooldown > 0) return false;
-        console.log(this.shootCooldownMultiplier)
 
         switch (skillName) {
             case 'magicMissile':

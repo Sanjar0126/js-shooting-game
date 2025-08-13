@@ -1,4 +1,4 @@
-import { getDistance } from './utils.js';
+import { GameMath } from './utils.js';
 
 class VirtualJoystick {
     constructor(container) {
@@ -130,11 +130,11 @@ class VirtualJoystick {
 
         const containerRect = this.container.getBoundingClientRect();
 
-        // const x = clientX - containerRect.left - this.centerX;
-        // const y = clientY - containerRect.top - this.centerY;
+        const x = clientX - containerRect.left - this.centerX;
+        const y = clientY - containerRect.top - this.centerY;
         // const distance = Math.sqrt(x * x + y * y);
 
-        const distance = getDistance(clientX - containerRect.left, clientY - containerRect.top, this.centerX, this.centerY);
+        const distance = GameMath.getDistance(clientX - containerRect.left, clientY - containerRect.top, this.centerX, this.centerY);
 
         if (distance <= this.maxDistance) {
             this.value.x = x / this.maxDistance;

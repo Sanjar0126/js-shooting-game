@@ -1,5 +1,5 @@
 import { ENEMY_CONFIG } from './enemyConfig.js';
-import { getDistance } from './utils.js';
+import { GameMath } from './utils.js';
 
 const BasicEnemy = 'basic';
 const FastEnemy = 'fast';
@@ -17,7 +17,30 @@ class Enemy {
         this.targetX = x;
         this.targetY = y;
 
+        this.isActive = false;
+
         this.setTypeProperties();
+    }
+
+    restart(x, y, type = BasicEnemy) {
+        this.lifetime = 0;
+        this.isActive = true;
+        this.x = x;
+        this.y = y;
+        this.targetX = x;
+        this.targetY = y;
+        this.type = type;
+        this.setTypeProperties();
+    }
+
+    deActivate() {
+        this.isActive = false;
+        this.lifetime = 0;
+        this.x = 0;
+        this.y = 0;
+        this.targetX = 0;
+        this.targetY = 0;
+        this.type = "dead";
     }
 
     setTypeProperties() {
@@ -65,7 +88,9 @@ class Enemy {
     }
 
     updateBasicMovement(deltaTime, player, speed = this.speed) {
-        const distance = getDistance(player.x, player.y, this.x, this.y);
+        const dx = player.x - this.x;
+        const dy = player.y - this.y;
+        const distance = GameMath.getDistance(player.x, player.y, this.x, this.y);
 
         this.targetX = player.x;
         this.targetY = player.y;
@@ -78,7 +103,10 @@ class Enemy {
 
     updateShooter(deltaTime, player, bullets, speed = this.speed) {
         //stop when shooting 
-        const distance = getDistance(player.x, player.y, this.x, this.y);
+        const distance = GameMath.getDistance(player.x, player.y, this.x, this.y);
+
+        const dx = player.x - this.x;
+        const dy = player.y - this.y;
 
         this.targetX = player.x;
         this.targetY = player.y;
@@ -110,10 +138,12 @@ class Enemy {
             return;
         }
 
-        const distance = getDistance(player.x, player.y, this.x, this.y);
+        const distance = GameMath.getDistance(player.x, player.y, this.x, this.y);
 
         this.targetX = player.x;
         this.targetY = player.y;
+        const dx = player.x - this.x;
+        const dy = player.y - this.y;
 
         if (distance > 0) {
             let currentSpeed = speed;
@@ -137,7 +167,7 @@ class Enemy {
         this.explosionTimer = 0;
 
         if (player && typeof player.takeDamage === 'function') {
-            const distance = getDistance(player.x, player.y, this.x, this.y);
+            const distance = GameMath.getDistance(player.x, player.y, this.x, this.y);
 
             if (distance <= this.explosionRadius) {
                 player.takeDamage(this.damage * player.damageReduction);

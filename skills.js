@@ -1,4 +1,4 @@
-import { findNearestEnemy, getDistance } from './utils.js';
+import { GameMath } from './utils.js';
 
 export const SKILL_CONFIG = {
     damageBoost: {
@@ -140,8 +140,8 @@ export const SKILL_CONFIG = {
     },
 
     iceSpike: {
-        name: 'Ice Spike',
-        description: 'Summons a spike of ice that damages and slows enemies.',
+        name: 'Ice Bomb',
+        description: 'Summons a bomb of ice that damages and slows enemies.',
         icon: '❄️',
         type: 'active',
         maxLevel: 5,
@@ -512,7 +512,9 @@ export class MagicMissile {
         this.speed = speed;
         this.radius = 4;
 
-        const distance = getDistance(x, y, targetX, targetY);
+        const distance = GameMath.getDistance(x, y, targetX, targetY);
+        const dx = targetX - x;
+        const dy = targetY - y;
 
         if (distance > 0) {
             this.vx = (dx / distance) * this.speed;
@@ -549,7 +551,7 @@ export class MagicMissile {
         );
 
         nearbyEnemies.forEach(enemy => {
-            const distance = getDistance(this.x, this.y, enemy.x, enemy.y);
+            const distance = GameMath.getDistance(this.x, this.y, enemy.x, enemy.y);
 
             if (distance < this.radius + enemy.radius) {
                 enemy.takeDamage(this.damage);
@@ -615,7 +617,9 @@ export class Fireball {
 
         this.radius = 8;
 
-        const distance = getDistance(x, y, targetX, targetY);
+        const distance = GameMath.getDistance(x, y, targetX, targetY);
+        const dx = targetX - x;
+        const dy = targetY - y;
 
         this.vx = (dx / distance) * this.speed;
         this.vy = (dy / distance) * this.speed;
@@ -638,7 +642,7 @@ export class Fireball {
         );
 
         for (let enemy of nearbyEnemies) {
-            const distance = getDistance(this.x, this.y, enemy.x, enemy.y);
+            const distance = GameMath.getDistance(this.x, this.y, enemy.x, enemy.y);
 
             if (distance < (this.radius + enemy.radius)) {
                 this.explode(nearbyEnemies, explosions);
@@ -655,7 +659,7 @@ export class Fireball {
         explosions.push(explosion);
 
         enemies.forEach(enemy => {
-            const distance = getDistance(this.x, this.y, enemy.x, enemy.y);
+            const distance = GameMath.getDistance(this.x, this.y, enemy.x, enemy.y);
 
             if (distance < this.explosionRadius) {
                 enemy.takeDamage(this.damage);
@@ -714,7 +718,7 @@ export class ChainLightning {
             enemies.forEach(enemy => {
                 if (this.hitEnemies.has(enemy)) return;
 
-                const distance = getDistance(currentPos.x, currentPos.y, enemy.x, enemy.y);
+                const distance = GameMath.getDistance(currentPos.x, currentPos.y, enemy.x, enemy.y);
 
                 if (distance < nearestDistance) {
                     nearestDistance = distance;
@@ -871,7 +875,9 @@ export class IceSpike {
         this.radius = 6;
         this.explosionRadius = 80;
 
-        const distance = getDistance(x, y, targetX, targetY);
+        const distance = GameMath.getDistance(x, y, targetX, targetY);
+        const dx = targetX - x;
+        const dy = targetY - y;
 
         this.vx = (dx / distance) * this.speed;
         this.vy = (dy / distance) * this.speed;
@@ -894,7 +900,7 @@ export class IceSpike {
         );
 
         nearbyEnemies.forEach(enemy => {
-            const distance = getDistance(this.x, this.y, enemy.x, enemy.y);
+            const distance = GameMath.getDistance(this.x, this.y, enemy.x, enemy.y);
 
             if (distance < this.radius + enemy.radius) {
                 this.hit(nearbyEnemies, explosions);
@@ -911,7 +917,7 @@ export class IceSpike {
         explosions.push(explosion);
 
         enemies.forEach(enemy => {
-            const distance = getDistance(this.x, this.y, enemy.x, enemy.y);
+            const distance = GameMath.getDistance(this.x, this.y, enemy.x, enemy.y);
 
             if (distance < this.explosionRadius) {
                 enemy.takeDamage(this.damage);
@@ -1017,7 +1023,9 @@ export class Meteor {
         this.warningTimer = warningTime;
         this.impacted = false;
 
-        const distance = getDistance(this.x, this.y, this.targetX, this.targetY);
+        const distance = GameMath.getDistance(this.x, this.y, this.targetX, this.targetY);
+        const dx = this.targetX - this.x;
+        const dy = this.targetY - this.y;
 
         this.vx = (dx / distance) * this.speed;
         this.vy = (dy / distance) * this.speed;
@@ -1039,7 +1047,7 @@ export class Meteor {
             this.radius
         );
 
-        const distance = getDistance(this.x, this.y, this.targetX, this.targetY);
+        const distance = GameMath.getDistance(this.x, this.y, this.targetX, this.targetY);
 
         if (distance < 20) {
             this.impact(nearbyEnemies, explosions);
@@ -1054,7 +1062,7 @@ export class Meteor {
         explosions.push(new Explosion(this.targetX, this.targetY, this.explosionRadius, this.damage, 'fire'));
 
         enemies.forEach(enemy => {
-            const distance = getDistance(this.targetX, this.targetY, enemy.x, enemy.y);
+            const distance = GameMath.getDistance(this.targetX, this.targetY, enemy.x, enemy.y);
 
             if (distance <= this.explosionRadius) {
                 enemy.takeDamage(this.damage);
