@@ -1,3 +1,5 @@
+import { getDistance } from "./utils";
+
 class Player {
     constructor(x, y) {
         this.x = x || 0;
@@ -85,9 +87,7 @@ class Player {
             this.y += dy * currentSpeed * (deltaTime / 1000);
         }
         else if (mouseWorldPos) {
-            dx = mouseWorldPos.x - this.x;
-            dy = mouseWorldPos.y - this.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+            const distance = getDistance(this.x, this.y, mouseWorldPos.x, mouseWorldPos.y);
 
             if (distance > 10) {
                 const moveX = (dx / distance) * currentSpeed * (deltaTime / 1000);

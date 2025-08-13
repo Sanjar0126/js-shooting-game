@@ -5,7 +5,7 @@ import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
 import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor, MagicMissile } from './skills.js';
 import { DamageNumberSystem } from './damageNumbers.js';
-import { findNearestEnemy } from './utils.js';
+import { findNearestEnemy, getDistance } from './utils.js';
 
 class Camera {
     constructor(width, height) {
@@ -408,10 +408,6 @@ class Game {
     }
 
     handleSkillInput() {
-        this.autoUseSkills();
-    }
-
-    autoUseSkills() {
         const playerSkills = Object.keys(this.player.skills);
         if (playerSkills.length === 0) return;
 
@@ -485,9 +481,8 @@ class Game {
 
     findRandomEnemy(maxRange = Infinity, count = 1) {
         const enemiesInRange = this.enemies.filter(enemy => {
-            const dx = enemy.x - this.player.x;
-            const dy = enemy.y - this.player.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+            const distance = getDistance(this.player.x, this.player.y, enemy.x, enemy.y);
+
             return distance <= maxRange;
         });
 
@@ -740,9 +735,7 @@ class Game {
     }
 
     isColliding(obj1, obj2) {
-        const dx = obj1.x - obj2.x;
-        const dy = obj1.y - obj2.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distance = getDistance(obj1.x, obj1.y, obj2.x, obj2.y);
         return distance < (obj1.radius + obj2.radius);
     }
 
