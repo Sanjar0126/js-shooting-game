@@ -33,7 +33,7 @@ class Enemy {
         this.setTypeProperties();
     }
 
-    deActivate() {
+    stop() {
         this.isActive = false;
         this.lifetime = 0;
         this.x = 0;

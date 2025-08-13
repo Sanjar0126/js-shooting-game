@@ -716,6 +716,8 @@ export class ChainLightning {
             let nearestDistance = this.range;
 
             enemies.forEach(enemy => {
+                if (enemy.isActive == false) return; 
+
                 if (this.hitEnemies.has(enemy)) return;
 
                 const distance = GameMath.getDistance(currentPos.x, currentPos.y, enemy.x, enemy.y);
