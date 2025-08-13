@@ -3,10 +3,12 @@ import { Enemy } from './enemy.js';
 import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
-import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor, MagicMissile } from './skills.js';
+import { SkillSystem, Fireball, Explosion, ChainLightning, IceSpike, Meteor, MagicMissile } from './skills.js';
 import { DamageNumberSystem } from './damageNumbers.js';
 import { GameMath } from './utils.js';
 import { ObjectPool, ProjectilePool } from './objectPool.js';
+import { SKILL_CONFIG } from './skillConfig.js';
+
 
 class Camera {
     constructor(width, height) {

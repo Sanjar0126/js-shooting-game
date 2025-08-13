@@ -133,7 +133,7 @@ class Player {
                 break;
             case 'chainLightning':
                 skillProjectiles.get('chainLightning',
-                    this.x, this.y, enemies,
+                    this.x, this.y, this, enemies,
                     skill.damage * this.damageMultiplier, skill.chains, skill.range
                 );
                 skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 300) * this.shootCooldownMultiplier;
