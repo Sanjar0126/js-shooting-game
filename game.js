@@ -6,7 +6,7 @@ import { VirtualJoystick } from './virtualJoystick.js';
 import { SkillSystem, Fireball, Explosion, ChainLightning, SKILL_CONFIG, IceSpike, Meteor, MagicMissile } from './skills.js';
 import { DamageNumberSystem } from './damageNumbers.js';
 import { GameMath } from './utils.js';
-import { ObjectPool } from './objectPool.js';
+import { ObjectPool, ProjectilePool } from './objectPool.js';
 
 class Camera {
     constructor(width, height) {
@@ -132,9 +132,10 @@ class Game {
 
         this.player = null;
         this.explosions = [];
-        this.skillProjectiles = [];
         this.deathAnimations = [];
         this.enemyBullets = [];
+
+        this.skillProjectilePool = new ProjectilePool()
 
         this.enemyPool = new ObjectPool(
             () => new Enemy(0, 0, 'basic'),
@@ -207,7 +208,6 @@ class Game {
         this.camera.y = 0;
 
         this.skillSystem.reset();
-        this.skillProjectiles = [];
         this.explosions = [];
         this.showingSkillSelection = false;
 
@@ -332,20 +332,20 @@ class Game {
             y: this.mouse.y + this.camera.y
         };
 
-        
+
         this.player.update(deltaTime, this.keys, mouseWorldPos);
         this.camera.update(this.player);
-        
+
         this.player.x = Math.max(this.player.radius, Math.min(this.worldWidth - this.player.radius, this.player.x));
         this.player.y = Math.max(this.player.radius, Math.min(this.worldHeight - this.player.radius, this.player.y));
-        
+
         this.waveTimer += deltaTime;
         if (this.waveTimer >= this.waveDuration) {
             this.nextWave();
         }
-        
+
         const activeEnemies = this.enemyPool.objects;
-        
+
         this.spatialGrid.clear();
         activeEnemies.forEach(enemy => {
             this.spatialGrid.addObject(enemy);
@@ -392,9 +392,17 @@ class Game {
             this.enemyCount++;
         }
 
-        for (let i = this.skillProjectiles.length - 1; i >= 0; i--) {
-            if (this.skillProjectiles[i].update(deltaTime, activeEnemies, this.explosions)) {
-                this.skillProjectiles.splice(i, 1);
+        const projectiles = this.skillProjectilePool.projectiles;
+
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+            const projectile = projectiles[i];
+
+            if (!projectile.isActive) continue;
+
+            const shouldRemove = projectile.update(deltaTime, this.enemies, this.explosions);
+
+            if (shouldRemove || !projectile.isActive) {
+                this.skillProjectilePool.release(projectile);
             }
         }
 
@@ -466,7 +474,7 @@ class Game {
                     skillName,
                     targets,
                     this.enemyPool.objects,
-                    this.skillProjectiles,
+                    this.skillProjectilePool,
                     this.explosions
                 );
             }
@@ -544,7 +552,13 @@ class Game {
             });
             this.enemyBullets.forEach(bullet => bullet.render(this.ctx, this.camera));
             this.deathAnimations.forEach(animation => animation.render(this.ctx, this.camera));
-            this.skillProjectiles.forEach(projectile => projectile.render(this.ctx, this.camera));
+            this.skillProjectilePool.projectiles.forEach(projectile => {
+                if (projectile.isActive) {
+                    projectile.render(this.ctx, this.camera)
+                } else {
+                    this.skillProjectilePool.release(projectile);
+                }
+            });
             this.explosions.forEach(explosion => explosion.render(this.ctx, this.camera));
 
             this.damageNumbers.render(this.ctx, this.camera);

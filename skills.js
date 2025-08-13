@@ -504,41 +504,113 @@ export class Explosion {
     }
 }
 
-export class MagicMissile {
-    constructor(x, y, targetX, targetY, damage, speed) {
-        this.x = x;
-        this.y = y;
-        this.damage = damage;
-        this.speed = speed;
+export class Projectile {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.vx = 0;
+        this.vy = 0;
+        this.damage = 0;
         this.radius = 4;
+        this.lifetime = 0;
+        this.maxLifetime = 3000;
+        this.isActive = false;
+        this.isHit = false;
+        this.type = 'base';
+    }
 
-        const distance = GameMath.getDistance(x, y, targetX, targetY);
-        const dx = targetX - x;
-        const dy = targetY - y;
+    init(...args) {
+        throw new Error('init() must be implemented by subclass');
+    }
 
+    reset() {
+        this.x = 0;
+        this.y = 0;
+        this.vx = 0;
+        this.vy = 0;
+        this.damage = 0;
+        this.radius = 4;
+        this.lifetime = 0;
+        this.maxLifetime = 3000;
+        this.isActive = false;
+        this.isHit = false;
+    }
+
+    update(deltaTime) {
+        if (!this.isActive || this.isHit) return true;
+
+        this.lifetime += deltaTime;
+        this.x += this.vx * (deltaTime / 1000);
+        this.y += this.vy * (deltaTime / 1000);
+
+        if (this.lifetime >= this.maxLifetime) {
+            this.isActive = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    render(ctx, camera) {
+        if (!this.isActive) return;
+
+        const screenX = this.x - camera.x;
+        const screenY = this.y - camera.y;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    setTarget(x, y, targetX, targetY, speed) {
+        const distance = Math.sqrt((targetX - x) ** 2 + (targetY - y) ** 2);
         if (distance > 0) {
-            this.vx = (dx / distance) * this.speed;
-            this.vy = (dy / distance) * this.speed;
+            this.vx = ((targetX - x) / distance) * speed;
+            this.vy = ((targetY - y) / distance) * speed;
         } else {
             this.vx = 0;
             this.vy = 0;
         }
+    }
+}
 
-        this.lifetime = 0;
-        this.maxLifetime = 3000;
+export class MagicMissile extends Projectile {
+    constructor() {
+        super();
 
+        this.type = 'magicMissile';
         this.trail = [];
         this.maxTrailLength = 8;
+        this.speed = 400;
+    }
 
+    init(x, y, targetX, targetY, damage, speed) {
+        this.x = x;
+        this.y = y;
+        this.damage = damage;
+        this.radius = 4;
+        this.speed = speed;
+        this.lifetime = 0;
+        this.maxLifetime = 3000;
+        this.isActive = true;
         this.isHit = false;
+        this.trail.length = 0;
+
+        this.setTarget(x, y, targetX, targetY, speed);
+    }
+
+    reset() {
+        super.reset();
+        this.trail.length = 0;
+        this.speed = 400;
     }
 
     update(deltaTime, enemies) {
-        if (this.isHit) return true;
+        if (!this.isActive) return true;
 
-        this.x += this.vx * (deltaTime / 1000);
-        this.y += this.vy * (deltaTime / 1000);
-        this.lifetime += deltaTime;
+        const mustRemove = super.update(deltaTime);
+        if (mustRemove) return true;
 
         this.trail.push({ x: this.x, y: this.y, time: this.lifetime });
         if (this.trail.length > this.maxTrailLength) {
@@ -551,21 +623,25 @@ export class MagicMissile {
         );
 
         nearbyEnemies.forEach(enemy => {
+            if (!enemy.isActive) return;
+
             const distance = GameMath.getDistance(this.x, this.y, enemy.x, enemy.y);
 
             if (distance < this.radius + enemy.radius) {
                 enemy.takeDamage(this.damage);
 
                 this.isHit = true;
-
+                this.isActive = false;
                 return true;
             }
         });
 
-        return this.lifetime > this.maxLifetime;
+        return false;
     }
 
     render(ctx, camera) {
+        if (!this.isActive) return;
+
         const screenX = this.x - camera.x;
         const screenY = this.y - camera.y;
 
@@ -607,34 +683,37 @@ export class MagicMissile {
     }
 }
 
-export class Fireball {
-    constructor(x, y, targetX, targetY, damage, radius) {
+export class Fireball extends Projectile {
+    constructor() {
+        super();
+        this.type = 'fireball';
+        this.explosionRadius = 200;
+        this.speed = 250;
+        this.radius = 8;
+        this.exploded = false;
+    }
+
+    init(x, y, targetX, targetY, damage, radius) {
         this.x = x;
         this.y = y;
         this.damage = damage;
         this.explosionRadius = radius;
+        this.lifetime = 0;
+        this.maxLifetime = 3000;
+        this.isActive = true;
+        this.isHit = false;
+        this.exploded = false;
+        this.radius = 8;
         this.speed = 250;
 
-        this.radius = 8;
-
-        const distance = GameMath.getDistance(x, y, targetX, targetY);
-        const dx = targetX - x;
-        const dy = targetY - y;
-
-        this.vx = (dx / distance) * this.speed;
-        this.vy = (dy / distance) * this.speed;
-
-        this.lifetime = 0;
-        this.maxLifetime = 4000;
-        this.exploded = false;
+        this.setTarget(x, y, targetX, targetY, this.speed);
     }
 
     update(deltaTime, enemies, explosions) {
-        if (this.exploded) return true;
+        if (this.exploded || !this.isActive) return true;
 
-        this.x += this.vx * (deltaTime / 1000);
-        this.y += this.vy * (deltaTime / 1000);
-        this.lifetime += deltaTime;
+        const mustRemove = super.update(deltaTime);
+        if (mustRemove) return true;
 
         const nearbyEnemies = window.game.spatialGrid.getObjectsInRange(
             this.x, this.y,
@@ -642,6 +721,8 @@ export class Fireball {
         );
 
         for (let enemy of nearbyEnemies) {
+            if (!enemy.isActive) continue;
+
             const distance = GameMath.getDistance(this.x, this.y, enemy.x, enemy.y);
 
             if (distance < (this.radius + enemy.radius)) {
@@ -650,11 +731,16 @@ export class Fireball {
             }
         }
 
-        return this.lifetime > this.maxLifetime
+        return false
     }
 
     explode(enemies, explosions) {
+        if (this.exploded) return;
+
+        this.isActive = false;
+        this.isHit = true;
         this.exploded = true;
+
         const explosion = new Explosion(this.x, this.y, this.explosionRadius, this.damage, 'fire');
         explosions.push(explosion);
 
@@ -668,7 +754,7 @@ export class Fireball {
     }
 
     render(ctx, camera) {
-        if (this.exploded) return;
+        if (this.exploded || !this.isActive) return;
 
         const screenX = this.x - camera.x;
         const screenY = this.y - camera.y;
@@ -693,17 +779,30 @@ export class Fireball {
     }
 }
 
-export class ChainLightning {
-    constructor(x, y, enemies, damage, chains, range) {
+export class ChainLightning extends Projectile {
+    constructor() {
+        super();
+        this.type = 'chainLightning';
+        this.chains = 0;
+        this.range = 0;
+        this.hitEnemies = new Set();
+        this.lightningChain = [];
+        this.duration = 0;
+        this.timer = 0;
+    }
+
+    init(x, y, enemies, damage, chains, range) {
         this.x = x;
         this.y = y;
         this.damage = damage;
         this.chains = chains;
         this.range = range;
-        this.hitEnemies = new Set();
         this.lightningChain = [];
+        this.hitEnemies.clear();
         this.duration = 500;
         this.timer = 0;
+        this.isActive = true;
+        this.isHit = false;
 
         this.createChain(enemies);
     }
@@ -716,7 +815,7 @@ export class ChainLightning {
             let nearestDistance = this.range;
 
             enemies.forEach(enemy => {
-                if (enemy.isActive == false) return; 
+                if (enemy.isActive == false) return;
 
                 if (this.hitEnemies.has(enemy)) return;
 
@@ -744,11 +843,15 @@ export class ChainLightning {
     }
 
     update(deltaTime) {
+        if (!this.isActive) return true;
+
         this.timer += deltaTime;
+
         return this.timer > this.duration;
     }
 
     render(ctx, camera) {
+        console.log('Rendering Chain Lightning');
         const alpha = Math.max(0, 1 - (this.timer / this.duration));
 
         ctx.save();
@@ -866,54 +969,59 @@ export class ChainLightning {
     }
 }
 
-export class IceSpike {
-    constructor(x, y, targetX, targetY, damage, slowDuration, slowAmount) {
+export class IceSpike extends Projectile {
+    constructor() {
+        super();
+        this.type = 'iceSpike';
+        this.slowDuration = 0;
+        this.slowAmount = 0;
+    }
+
+    init(x, y, targetX, targetY, damage, slowDuration, slowAmount) {
         this.x = x;
         this.y = y;
         this.damage = damage;
         this.slowDuration = slowDuration;
         this.slowAmount = slowAmount;
+        this.lifetime = 0;
+        this.maxLifetime = 4000;
+        this.isActive = true;
+        this.isHit = false;
         this.speed = 300;
         this.radius = 6;
         this.explosionRadius = 80;
 
-        const distance = GameMath.getDistance(x, y, targetX, targetY);
-        const dx = targetX - x;
-        const dy = targetY - y;
-
-        this.vx = (dx / distance) * this.speed;
-        this.vy = (dy / distance) * this.speed;
-
-        this.lifetime = 0;
-        this.maxLifetime = 3000;
-        this.isHit = false;
+        this.setTarget(x, y, targetX, targetY, this.speed);
     }
 
     update(deltaTime, enemies, explosions) {
+        if (!this.isActive) return true;
         if (this.isHit) return true;
 
-        this.x += this.vx * (deltaTime / 1000);
-        this.y += this.vy * (deltaTime / 1000);
-        this.lifetime += deltaTime;
+        const mustRemove = super.update(deltaTime);
+        if (mustRemove) return true;
 
         const nearbyEnemies = window.game.spatialGrid.getObjectsInRange(
             this.x, this.y,
             this.radius
         );
 
-        nearbyEnemies.forEach(enemy => {
+        for (let enemy of nearbyEnemies) {
+            if (!enemy.isActive) continue;
+
             const distance = GameMath.getDistance(this.x, this.y, enemy.x, enemy.y);
 
             if (distance < this.radius + enemy.radius) {
                 this.hit(nearbyEnemies, explosions);
                 return true;
             }
-        });
+        };
 
         return this.lifetime > this.maxLifetime;
     }
 
     hit(enemies, explosions) {
+        this.isActive = false;
         this.isHit = true;
         const explosion = new Explosion(this.x, this.y, this.explosionRadius, this.damage, 'frost');
         explosions.push(explosion);
@@ -1010,10 +1118,15 @@ export class IceSpike {
         ctx.restore();
     }
 }
+export class Meteor extends Projectile {
+    constructor() {
+        super();
+        this.type = 'meteor';
+        this.speed = 400;
+        this.radius = 12;
+    }
 
-
-export class Meteor {
-    constructor(targetX, targetY, damage, radius, warningTime = 200) {
+    init(targetX, targetY, damage, radius, warningTime = 200) {
         this.targetX = targetX;
         this.targetY = targetY;
         this.x = targetX + (Math.random() - 0.5) * 200;
@@ -1024,16 +1137,18 @@ export class Meteor {
         this.radius = 12;
         this.warningTimer = warningTime;
         this.impacted = false;
+        this.isActive = true;
+        this.isHit = false;
 
-        const distance = GameMath.getDistance(this.x, this.y, this.targetX, this.targetY);
-        const dx = this.targetX - this.x;
-        const dy = this.targetY - this.y;
-
-        this.vx = (dx / distance) * this.speed;
-        this.vy = (dy / distance) * this.speed;
+        this.setTarget(this.x, this.y, targetX, targetY, this.speed);
     }
 
     update(deltaTime, enemies, explosions) {
+        if (!this.isActive) return true;
+
+        const mustRemove = super.update(deltaTime);
+        if (mustRemove) return true;
+
         if (this.warningTimer > 0) {
             this.warningTimer -= deltaTime;
             return false;
@@ -1061,6 +1176,8 @@ export class Meteor {
 
     impact(enemies, explosions) {
         this.impacted = true;
+        this.isActive = false;
+        this.isHit = true;
         explosions.push(new Explosion(this.targetX, this.targetY, this.explosionRadius, this.damage, 'fire'));
 
         enemies.forEach(enemy => {

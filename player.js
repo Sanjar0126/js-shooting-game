@@ -120,51 +120,46 @@ class Player {
 
         switch (skillName) {
             case 'magicMissile':
-                skillProjectiles.push(new window.MagicMissile(
+                skillProjectiles.get('magicMissile',
                     this.x, this.y, targets[0].x, targets[0].y,
                     skill.damage * this.damageMultiplier, skill.speed * this.bulletSpeedMultiplier
-                ));
+                );
                 skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 40) * this.shootCooldownMultiplier;
                 break;
             case 'fireball':
-                const fireball = new window.Fireball(
-                    this.x, this.y, targets[0].x, targets[0].y,
-                    skill.damage * this.damageMultiplier, skill.radius
-                );
-                skillProjectiles.push(fireball);
+                skillProjectiles.get('fireball', this.x, this.y, targets[0].x, targets[0].y,
+                    skill.damage * this.damageMultiplier, skill.radius);
                 skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200) * this.shootCooldownMultiplier;
                 break;
             case 'chainLightning':
-                skillProjectiles.push(new window.ChainLightning(
+                skillProjectiles.get('chainLightning',
                     this.x, this.y, enemies,
                     skill.damage * this.damageMultiplier, skill.chains, skill.range
-                ));
+                );
                 skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 300) * this.shootCooldownMultiplier;
                 break;
 
             case 'iceSpike':
-                skillProjectiles.push(new window.IceSpike(
+                skillProjectiles.get('iceSpike',
                     this.x, this.y, targets[0].x, targets[0].y,
                     skill.damage * this.damageMultiplier, skill.slowDuration, skill.slowAmount
-                ));
+                );
                 skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 200) * this.shootCooldownMultiplier;
                 break;
 
             case 'meteor':
+                var warningTimer = 300
                 for (let i = 0; i < skill.count; i++) {
                     const offsetX = (Math.random() - 0.5) * 60;
                     const offsetY = (Math.random() - 0.5) * 60;
-                    const meteor = new window.Meteor(
-                        targets[i % targets.length].x + offsetX,
+
+                    warningTimer += i * 100;
+
+                    skillProjectiles.get('meteor', targets[i % targets.length].x + offsetX,
                         targets[i % targets.length].y + offsetY,
                         skill.damage * this.damageMultiplier,
                         skill.radius,
-                        300,
-                    );
-
-                    meteor.warningTimer += i * 100;
-
-                    skillProjectiles.push(meteor);
+                        warningTimer);
                 }
                 skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 500) * this.shootCooldownMultiplier;
                 break;
