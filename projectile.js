@@ -1,4 +1,4 @@
-import { MagicMissile, Fireball, IceSpike, ChainLightning, Meteor } from './skills.js';
+import { MagicMissile, Fireball, IceSpike, ChainLightning, Meteor, ArcingShock } from './skills.js';
 
 export class ProjectileFactory {
     static create(type) {
@@ -13,12 +13,14 @@ export class ProjectileFactory {
                 return new ChainLightning();
             case 'meteor':
                 return new Meteor();
+            case 'arcingShock':
+                return new ArcingShock();
             default:
                 throw new Error(`Unknown projectile type: ${type}`);
         }
     }
 
     static getTypes() {
-        return ['magicMissile', 'fireball', 'iceSpike', 'chainLightning', 'meteor'];
+        return ['magicMissile', 'fireball', 'iceSpike', 'chainLightning', 'meteor', 'arcingShock'];
     }
 }

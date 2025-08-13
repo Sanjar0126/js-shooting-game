@@ -148,7 +148,6 @@ export class Explosion {
         const bubbleCount = 16;
         const baseRadius = this.currentRadius;
 
-
         ctx.shadowColor = '#44ff00';
         ctx.shadowBlur = 12;
         ctx.fillStyle = '#88ff00';
@@ -612,12 +611,12 @@ export class ChainLightning extends Projectile {
             if (nearestEnemy) {
                 this.lightningChain.push({
                     from: currentFrom,
-                    to: {x: nearestEnemy.x, y: nearestEnemy.y}
+                    to: { x: nearestEnemy.x, y: nearestEnemy.y }
                 });
 
                 nearestEnemy.takeDamage(this.damage);
                 this.hitEnemies.add(nearestEnemy);
-                currentFrom = {x: nearestEnemy.x, y: nearestEnemy.y};
+                currentFrom = { x: nearestEnemy.x, y: nearestEnemy.y };
             } else {
                 break;
             }
@@ -633,7 +632,6 @@ export class ChainLightning extends Projectile {
     }
 
     render(ctx, camera) {
-        console.log('Rendering Chain Lightning');
         const alpha = Math.max(0, 1 - (this.timer / this.duration));
 
         ctx.save();
@@ -657,6 +655,291 @@ export class ChainLightning extends Projectile {
                 this.drawLightningBranches(ctx, fromX, fromY, toX, toY);
             }
         });
+
+        ctx.restore();
+    }
+
+    drawLightningBolt(ctx, fromX, fromY, toX, toY) {
+        const segments = 8;
+        const displacement = 15;
+
+        let points = [{ x: fromX, y: fromY }];
+
+        for (let i = 1; i < segments; i++) {
+            const t = i / segments;
+            const baseX = fromX + (toX - fromX) * t;
+            const baseY = fromY + (toY - fromY) * t;
+
+            const angle = Math.atan2(toY - fromY, toX - fromX) + Math.PI / 2;
+            const disp = (Math.random() - 0.5) * displacement * (1 - Math.abs(t - 0.5) * 2);
+
+            points.push({
+                x: baseX + Math.cos(angle) * disp,
+                y: baseY + Math.sin(angle) * disp
+            });
+        }
+
+        points.push({ x: toX, y: toY });
+
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.stroke();
+
+        ctx.save();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.shadowBlur = 5;
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    drawLightningBranches(ctx, fromX, fromY, toX, toY) {
+        const numBranches = Math.floor(Math.random() * 3) + 1;
+
+        for (let i = 0; i < numBranches; i++) {
+            const t = 0.2 + Math.random() * 0.6;
+            const branchStartX = fromX + (toX - fromX) * t;
+            const branchStartY = fromY + (toY - fromY) * t;
+
+            const branchLength = 20 + Math.random() * 30;
+            const branchAngle = Math.atan2(toY - fromY, toX - fromX) +
+                (Math.random() - 0.5) * Math.PI * 0.8;
+
+            const branchEndX = branchStartX + Math.cos(branchAngle) * branchLength;
+            const branchEndY = branchStartY + Math.sin(branchAngle) * branchLength;
+
+            ctx.save();
+            ctx.lineWidth = 2;
+            ctx.globalAlpha *= 0.7;
+
+            const branchSegments = 3;
+            let branchPoints = [{ x: branchStartX, y: branchStartY }];
+
+            for (let j = 1; j < branchSegments; j++) {
+                const bt = j / branchSegments;
+                const baseX = branchStartX + (branchEndX - branchStartX) * bt;
+                const baseY = branchStartY + (branchEndY - branchStartY) * bt;
+
+                const perpAngle = branchAngle + Math.PI / 2;
+                const disp = (Math.random() - 0.5) * 8;
+
+                branchPoints.push({
+                    x: baseX + Math.cos(perpAngle) * disp,
+                    y: baseY + Math.sin(perpAngle) * disp
+                });
+            }
+
+            branchPoints.push({ x: branchEndX, y: branchEndY });
+
+            ctx.beginPath();
+            ctx.moveTo(branchPoints[0].x, branchPoints[0].y);
+            for (let j = 1; j < branchPoints.length; j++) {
+                ctx.lineTo(branchPoints[j].x, branchPoints[j].y);
+            }
+            ctx.stroke();
+
+            ctx.restore();
+        }
+    }
+}
+
+export class ArcingShock extends Projectile {
+    constructor() {
+        super();
+        this.type = 'arcingShock';
+        this.chains = 0;
+        this.range = 0;
+        this.hitEnemies = new Set();
+        this.lightningChain = [];
+        this.duration = 0;
+        this.timer = 0;
+    }
+
+    init(x, y, player, enemies, damage, range) {
+        this.x = x;
+        this.y = y;
+        this.damage = damage;
+        this.cone = 90;
+        this.range = range;
+        this.lightningChain = [];
+        this.hitEnemies.clear();
+        this.duration = 500;
+        this.timer = 0;
+        this.isActive = true;
+        this.isHit = false;
+
+        this.createConeLightning(player, enemies, this.cone, 200);
+    }
+
+    createConeLightning(player, enemies, coneWidthDeg = 60, maxRange = 400) {
+        this.lightningChain = [];
+
+        let currentPos = { x: this.x, y: this.y };
+        let nearestEnemy = null;
+        let nearestDistance = maxRange;
+
+        for (let enemy of enemies) {
+            if (!enemy.isActive) continue;
+            if (this.hitEnemies.has(enemy)) continue;
+
+            if (typeof enemy.x !== 'number' || typeof enemy.y !== 'number' ||
+                isNaN(enemy.x) || isNaN(enemy.y)) {
+                continue;
+            }
+
+            const distance = GameMath.getDistance(currentPos.x, currentPos.y, enemy.x, enemy.y);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestEnemy = enemy;
+            }
+        }
+
+        if (!nearestEnemy) return;
+
+        const coneAngle = Math.atan2(
+            nearestEnemy.y - currentPos.y,
+            nearestEnemy.x - currentPos.x
+        );
+
+        // this.debugConeData = {
+        //     coneAngle: coneAngle,
+        //     nearestEnemy: nearestEnemy,
+        //     maxRange: maxRange
+        // };
+
+        for (let enemy of enemies) {
+            if (!enemy.isActive) continue;
+            if (this.hitEnemies.has(enemy)) continue;
+
+            if (typeof enemy.x !== 'number' || typeof enemy.y !== 'number' ||
+                isNaN(enemy.x) || isNaN(enemy.y)) {
+                console.warn('Enemy has invalid coordinates:', enemy);
+                continue;
+            }
+
+            const dx = enemy.x - currentPos.x;
+            const dy = enemy.y - currentPos.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > maxRange) continue;
+
+            const angleToEnemy = Math.atan2(dy, dx);
+            let diff = angleToEnemy - coneAngle;
+
+            diff = (diff + Math.PI) % (2 * Math.PI) - Math.PI;
+
+            const coneHalfAngle = (coneWidthDeg / 2) * Math.PI / 180;
+            if (Math.abs(diff) <= coneHalfAngle) {
+                this.lightningChain.push({
+                    from: { x: currentPos.x, y: currentPos.y },
+                    to: { x: enemy.x, y: enemy.y }
+                });
+
+                enemy.takeDamage(this.damage);
+                this.hitEnemies.add(enemy);
+            }
+        }
+
+        console.log(`Hit ${this.hitEnemies.size} enemies in cone`);
+    }
+
+    update(deltaTime) {
+        if (!this.isActive) return true;
+
+        this.timer += deltaTime;
+
+        return this.timer > this.duration;
+    }
+
+    render(ctx, camera) {
+        const alpha = Math.max(0, 1 - (this.timer / this.duration));
+
+        // this.renderConeDebug(ctx, camera, alpha * 0.3);
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = '#d249eeff';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#821ad8ff';
+        ctx.shadowBlur = 10;
+
+        this.lightningChain.forEach(chain => {
+            if (!chain.from || !chain.to) return;
+
+            const fromX = chain.from.x - camera.x;
+            const fromY = chain.from.y - camera.y;
+            const toX = chain.to.x - camera.x;
+            const toY = chain.to.y - camera.y;
+
+            this.drawLightningBolt(ctx, fromX, fromY, toX, toY);
+
+            if (Math.random() < 0.3) {
+                this.drawLightningBranches(ctx, fromX, fromY, toX, toY);
+            }
+        });
+
+        ctx.restore();
+    }
+
+    renderConeDebug(ctx, camera, alpha = 0.3) {
+        if (!this.debugConeData) return;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+
+        const centerX = this.x - camera.x;
+        const centerY = this.y - camera.y;
+
+        ctx.strokeStyle = '#ffff00'; 
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, this.range, 0, Math.PI * 2);
+        ctx.stroke();
+
+        if (this.debugConeData.coneAngle !== undefined) {
+            const coneHalfAngle = (this.cone / 2) * Math.PI / 180;
+            const startAngle = this.debugConeData.coneAngle - coneHalfAngle;
+            const endAngle = this.debugConeData.coneAngle + coneHalfAngle;
+
+            ctx.strokeStyle = '#ff0080'; 
+            ctx.fillStyle = '#ff008020'; 
+            ctx.lineWidth = 2;
+            ctx.setLineDash([]);
+
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, this.range, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            if (this.debugConeData.nearestEnemy) {
+                ctx.strokeStyle = '#ff0000'; 
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(
+                    this.debugConeData.nearestEnemy.x - camera.x,
+                    this.debugConeData.nearestEnemy.y - camera.y
+                );
+                ctx.stroke();
+            }
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 3, 0, Math.PI * 2);
+        ctx.fill();
 
         ctx.restore();
     }

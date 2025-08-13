@@ -114,7 +114,7 @@ export const SKILL_CONFIG = {
     chainLightning: {
         name: 'Chain Lightning',
         description: 'Unleashes a chain lightning attack.',
-        icon: '⚡️',
+        icon: '⚡︎',
         type: 'active',
         maxLevel: 5,
         baseCooldown: 3000,
@@ -134,6 +134,31 @@ export const SKILL_CONFIG = {
             player.skills.chainLightning.level = level;
             player.skills.chainLightning.damage = 60 + (level - 1) * 15;
             player.skills.chainLightning.chains = 3 + (level - 1) * 2;
+        },
+    },
+
+    arcingShock: {
+        name: 'Arcing Shock',
+        description: 'Creates a cone of energy that damages enemies.',
+        icon: '⚡️',
+        type: 'active',
+        maxLevel: 5,
+        baseCooldown: 4000,
+        baseDamage: 40,
+        aimNearestEnemy: true,
+        effect: (player, level) => {
+            if (!player.skills.arcingShock) {
+                player.skills.arcingShock = {
+                    level: 0,
+                    cooldown: 0,
+                    damage: 40,
+                    cone: 45,
+                    range: 300,
+                };
+            }
+            player.skills.arcingShock.level = level;
+            player.skills.arcingShock.damage = 40 + (level - 1) * 15;
+            player.skills.arcingShock.range = 300 + (level - 1) * 20;
         },
     },
 

@@ -3,7 +3,7 @@ import { Enemy } from './enemy.js';
 import { DeathAnimation, LevelUpEffect } from './animations.js';
 import { FPSMeter } from './debug.js';
 import { VirtualJoystick } from './virtualJoystick.js';
-import { SkillSystem, Fireball, Explosion, ChainLightning, IceSpike, Meteor, MagicMissile } from './skills.js';
+import { SkillSystem, Fireball, Explosion, ChainLightning, IceSpike, Meteor, MagicMissile, ArcingShock } from './skills.js';
 import { DamageNumberSystem } from './damageNumbers.js';
 import { GameMath } from './utils.js';
 import { ObjectPool, ProjectilePool } from './objectPool.js';
@@ -890,5 +890,6 @@ window.ChainLightning = ChainLightning;
 window.IceSpike = IceSpike;
 window.Meteor = Meteor;
 window.MagicMissile = MagicMissile;
+window.ArcingShock = ArcingShock;
 
 export { Game };

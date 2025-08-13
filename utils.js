@@ -27,4 +27,19 @@ export class GameMath {
 
         return nearestEnemy;
     }
+
+    isInCone(px, py, tx, ty, coneAngle, coneWidthDeg, coneRange) {
+        const dx = tx - px;
+        const dy = ty - py;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > coneRange) return false;
+
+        const angleToTarget = Math.atan2(dy, dx);
+        let diff = angleToTarget - coneAngle;
+
+        diff = (diff + Math.PI) % (2 * Math.PI) - Math.PI;
+
+        return Math.abs(diff) <= (coneWidthDeg / 2) * Math.PI / 180;
+    }
+
 }
