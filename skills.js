@@ -26,8 +26,6 @@ export class SkillSystem {
             choices.push(skillId);
         }
 
-        console.log('Generated skill choices:', choices);
-
         return choices;
     }
 
@@ -847,8 +845,6 @@ export class ArcingShock extends Projectile {
                 this.hitEnemies.add(enemy);
             }
         }
-
-        console.log(`Hit ${this.hitEnemies.size} enemies in cone`);
     }
 
     update(deltaTime) {
@@ -866,9 +862,9 @@ export class ArcingShock extends Projectile {
 
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.strokeStyle = '#d249eeff';
+        ctx.strokeStyle = '#e9b91dff';
         ctx.lineWidth = 3;
-        ctx.shadowColor = '#821ad8ff';
+        ctx.shadowColor = '#ebee38ff';
         ctx.shadowBlur = 10;
 
         this.lightningChain.forEach(chain => {

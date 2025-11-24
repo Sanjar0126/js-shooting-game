@@ -186,6 +186,8 @@ class Game {
         this.gameState = 'playing';
         this.isRunning = true;
 
+        this.bossSpawned = false;
+
         this.score = 0;
         this.wave = 1;
         this.waveTimer = 0;
@@ -388,7 +390,7 @@ class Game {
         }
 
         this.enemySpawnTimer += deltaTime;
-        if (this.enemySpawnTimer > Math.max(1000 - this.wave * 50, 200)) {
+        if (this.enemySpawnTimer > Math.max(700 - this.wave * 50, 200)) {
             this.spawnEnemy();
             this.enemySpawnTimer = 0;
             this.enemyCount++;
@@ -567,7 +569,7 @@ class Game {
             this.renderSkillUI();
             this.drawWorldBounds();
 
-            this.drawLineToNearestEnemy();
+            // this.drawLineToNearestEnemy();
 
             if (this.showingSkillSelection) {
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -652,6 +654,8 @@ class Game {
 
         this.difficultyMultiplier *= 1.08;
 
+        this.bossSpawned = false;
+
         console.log(`Wave ${this.wave}! Difficulty: ${this.difficultyMultiplier.toFixed(2)}x`);
 
         this.showWaveNotification();
@@ -721,6 +725,22 @@ class Game {
     }
 
     spawnEnemy() {
+        if (this.wave % 3 === 0 && !this.bossSpawned) {
+            const spawnDistance = 500;
+            const angle = Math.random() * Math.PI * 2;
+
+            const x = this.player.x + Math.cos(angle) * spawnDistance;
+            const y = this.player.y + Math.sin(angle) * spawnDistance;
+
+            const clampedX = Math.max(50, Math.min(this.worldWidth - 50, x));
+            const clampedY = Math.max(50, Math.min(this.worldHeight - 50, y));
+
+            const boss = this.enemyPool.get();
+            boss.restart(clampedX, clampedY, 'boss');
+            this.bossSpawned = true;
+            return;
+        }
+
         let enemyType = 'basic';
         const rand = Math.random();
         const waveMultiplier = Math.min(this.wave / 10, 1);

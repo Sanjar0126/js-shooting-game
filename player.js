@@ -139,7 +139,6 @@ class Player {
                 skill.cooldown = (window.SKILL_CONFIG[skillName].baseCooldown - (skill.level - 1) * 300) * this.shootCooldownMultiplier;
                 break;
             case 'arcingShock':
-                console.log(skill)
                 skillProjectiles.get('arcingShock',
                     this.x, this.y, this, enemies,
                     skill.damage * this.damageMultiplier, skill.range

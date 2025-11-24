@@ -6,6 +6,7 @@ const FastEnemy = 'fast';
 const TankEnemy = 'tank';
 const ShooterEnemy = 'shooter';
 const ExploderEnemy = 'exploder';
+const BossEnemy = 'boss';
 
 class Enemy {
     constructor(x, y, type = BasicEnemy) {
@@ -83,6 +84,10 @@ class Enemy {
 
             case ExploderEnemy:
                 this.updateExploder(deltaTime, player, effectiveSpeed);
+                break;
+
+            case BossEnemy:
+                this.updateBoss(deltaTime, player, bullets, effectiveSpeed);
                 break;
         }
     }
@@ -172,6 +177,30 @@ class Enemy {
             if (distance <= this.explosionRadius) {
                 player.takeDamage(this.damage * player.damageReduction);
             }
+        }
+    }
+
+    updateBoss(deltaTime, player, bullets, speed = this.speed) {
+        const distance = GameMath.getDistance(player.x, player.y, this.x, this.y);
+        const dx = player.x - this.x;
+        const dy = player.y - this.y;
+
+        this.targetX = player.x;
+        this.targetY = player.y;
+
+        if (distance > this.shootRange - 50) {
+            this.x += (dx / distance) * speed * (deltaTime / 1000);
+            this.y += (dy / distance) * speed * (deltaTime / 1000);
+        }
+
+        this.lastShot += deltaTime;
+        if (this.lastShot >= this.shootCooldown && distance <= this.shootRange && bullets) {
+            const baseAngle = Math.atan2(dy, dx);
+            const spread = 0.2; // radians
+            for (let i = -2; i <= 2; i++) {
+                bullets.push(new EnemyBullet(this.x, this.y, baseAngle + i * spread));
+            }
+            this.lastShot = 0;
         }
     }
 
@@ -357,6 +386,19 @@ class Enemy {
                     ctx.fill();
                     ctx.shadowBlur = 0;
                 }
+                break;
+            case BossEnemy:
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#ff0000';
+                ctx.stroke();
+                ctx.font = 'bold 14px Arial';
+                ctx.fillStyle = '#000';
+                ctx.textAlign = 'center';
+                ctx.fillText('BOSS', screenX, screenY + 4);
                 break;
         }
 

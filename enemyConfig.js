@@ -51,4 +51,18 @@ export const ENEMY_CONFIG = {
         explosionDuration: 500,
         xpValue: 35,
     },
+
+    boss: {
+        radius: 40,
+        speed: 80,
+        health: 2000,
+        damage: 50,
+        color: '#ffcc00',
+        scoreValue: 500,
+        xpValue: 500,
+        shootCooldown: 1000,
+        shootRange: 600,
+        lastShot: 0,
+        boss: true,
+    }
 };
